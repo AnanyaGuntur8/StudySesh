@@ -29,14 +29,14 @@ const Welcome = ({navigation}) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '050315',
+    backgroundColor: '#050315',
   },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 30,
-    backgroundColor: '050315',
+    backgroundColor: '#050315',
   },
   pageTitle: {
     fontSize: 50,

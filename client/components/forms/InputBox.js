@@ -30,13 +30,13 @@ const InputBox = ({
 };
 const styles = StyleSheet.create({
     inputTitle: {
-        color: '#0F141F', // Change this to the desired color
+        color: '#050315', // Change this to the desired color
         marginBottom: 5,
     },
     inputBox:{
         height:40,
         marginBottom: 20,
-        backgroundColor: '#0F141F',
+        backgroundColor: '#050315',
         borderRadius:15,
         borderColor:'#23CAFF',
         borderWidth: 2,

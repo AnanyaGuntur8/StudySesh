@@ -11,6 +11,7 @@ const Register = ({ navigation }) => {
 
   // States
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,18 +20,18 @@ const Register = ({ navigation }) => {
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      if (!name || !email || !password) {
+      if (!username || !name || !email || !password) {
         Alert.alert('Please Fill All Fields');
         setLoading(false);
         return;
       }
 
-      const { data } = await axios.post('/auth/register', { name, email, password });
+      const { data } = await axios.post('/auth/register', { name, username, email, password });
       setState(data);
       await AsyncStorage.setItem('@auth', JSON.stringify(data));
       Alert.alert(data && data.message);
       navigation.navigate('Login');
-      console.log('Register Data =>', { name, email, password });
+      console.log('Register Data =>', { name, username, email, password });
     } catch (error) {
       Alert.alert('Error', error.response?.data?.message || 'An error occurred');
       console.log(error);
@@ -42,13 +43,19 @@ const Register = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Text style={styles.pageTitle}>@Register</Text>
+        <Text style={styles.pageTitle}>Register</Text>
         <View style={{ marginHorizontal: 20 }}>
           <InputBox
             inputTitle={'Name'}
             value={name}
             setValue={setName}
             autoCapitalize={true}
+          />
+          <InputBox
+            inputTitle={'Username'}
+            value={username} // Corrected this line
+            setValue={setUsername} // Corrected this line
+            autoCapitalize={false}
           />
           <InputBox
             inputTitle={'Email'}
@@ -88,13 +95,13 @@ const Register = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '050315',
+    backgroundColor: '#050315',
   },
   container: {
     flex: 1,
     justifyContent: 'center',
     marginHorizontal: 20,
-    backgroundColor: '050315',
+    backgroundColor: '#050315',
   },
   pageTitle: {
     fontSize: 40,
@@ -105,7 +112,7 @@ const styles = StyleSheet.create({
   inputBox: {
     height: 40,
     marginBottom: 20,
-    backgroundColor: '050315',
+    backgroundColor: '#050315',
     borderRadius: 15,
     borderColor: '#23CAFF',
     borderWidth: 2,

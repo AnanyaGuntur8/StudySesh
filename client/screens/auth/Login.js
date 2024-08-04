@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
         flex:1,
         justifyContent:'center',
         marginHorizontal: 20,
-        backgroundColor: '#030918',
+        backgroundColor: '#050315',
         
     },
     pageTitle: {
