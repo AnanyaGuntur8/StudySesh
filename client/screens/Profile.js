@@ -16,21 +16,27 @@ const Profile = () => {
         <SafeAreaView style={styles.safearea}>
             <ScrollView contentContainerStyle={styles.scrollView}>
                 <View style={styles.container}>
-                    <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.profileImage} />
-                    <Text style={styles.statsText}>Following</Text>
-                    <Text style={styles.statsText}>Followers</Text>
-                    <View style={styles.headerInfo}>
+                    <View style={styles.profileContainer}>
+                        <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.profileImage} />
+                        <View style={styles.headerInfo}>
                         <Text style={styles.name}>{state?.user.name}</Text>
-                        <Text style={styles.username}>{state?.user.username}</Text>
-                        <Text style={styles.email}>{state?.user.email}</Text>
+                            <Text style={styles.username}>{state?.user.username}</Text>
+                            <Text style={styles.email}>{state?.user.email}</Text>
+                        </View>
+                        </View>
+                        <View style={styles.statsContainer}>
+                        <Text style={styles.statsText}>Following</Text>
+                        <Text style={styles.statsText}>Followers</Text>
+                    
+    
                     </View>
+                        
+                    
                     <TouchableOpacity style={styles.editButton}>
                         <Text style={styles.editText}>Edit</Text>
                     </TouchableOpacity>
                 </View>
-                <View style={styles.statsContainer}>
-                    
-                </View>
+                
                 <TouchableOpacity style={styles.optionButton}>
                     <Text style={styles.optionText}>Settings</Text>
                 </TouchableOpacity>
@@ -66,6 +72,11 @@ const styles = StyleSheet.create({
     text: {
         color: 'white',
     },
+    profileContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
     profileImage: {
         width: 100,
         height: 100,
@@ -75,6 +86,7 @@ const styles = StyleSheet.create({
     },
     headerInfo: {
         marginBottom: 20,
+        paddingLeft: 10,
     },
     name: {
         fontSize: 20,
@@ -82,16 +94,16 @@ const styles = StyleSheet.create({
     },
     username: {
         fontSize: 16,
-        color: 'gray',
+        color: '#23CAFF',
     },
     email: {
         fontSize: 14,
-        color: 'gray',
+        color: '#23CAFF',
     },
     editButton: {
         backgroundColor: '#23CAFF',
         padding: 10,
-        borderRadius: 5,
+        borderRadius: 30,
         alignItems: 'center',
         marginBottom: 20,
     },
@@ -108,11 +120,14 @@ const styles = StyleSheet.create({
     statsText: {
         color: 'white',
         fontSize: 16,
+        flexDirection: 'row'
     },
     optionButton: {
-        backgroundColor: '#1A1637',
+        // backgroundColor: '#1A1637',
+        borderColor:'white',
+        borderWidth: 1,
         padding: 10,
-        borderRadius: 5,
+        borderRadius: 30,
         alignItems: 'center',
         marginBottom: 10,
     },
@@ -123,7 +138,7 @@ const styles = StyleSheet.create({
     logoutButton: {
         backgroundColor: '#ff6347',
         padding: 10,
-        borderRadius: 5,
+        borderRadius: 30,
         alignItems: 'center',
         marginBottom: 20,
     },

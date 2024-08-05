@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
            // Add a background color if needed
             paddingVertical: 2, // Adjust padding for better touch area
             paddingHorizontal: 16,
-
+            
     },
     iconStyle:{ 
         alignSelf: "center",
