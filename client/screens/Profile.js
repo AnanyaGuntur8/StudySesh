@@ -37,7 +37,7 @@ function Profile() {
             <ScrollView contentContainerStyle={styles.scrollView}>
                 <View style={styles.container}>
                     <View style={styles.profileContainer}>
-                    <TouchableOpacity onPress={handleChoosePhoto}>
+                    <TouchableOpacity>
                         <Image source={{ uri: profileImage }} style={styles.profileImage} />
                     </TouchableOpacity>
                         <View style={styles.headerInfo}>
