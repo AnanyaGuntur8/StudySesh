@@ -1,42 +1,64 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, Text, StyleSheet, Image, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { AuthContext } from '../context/authContext';
 import FooterMenu from '../components/Menus/FooterMenu';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { launchImageLibrary } from 'react-native-image-picker';
 
-const Profile = () => {
+function Profile() {
     const [state, setState] = useContext(AuthContext);
-    //log out function
-    const handleLogout = async () =>  {
-      setState({token:'', user: null})
-      await AsyncStorage.removeItem('@auth')
-      alert('Log Out Successfully')
-    }
+    const [profileImage, setProfileImage] = useState(state.user.profileImage || 'https://via.placeholder.com/100');
+
+    const handleLogout = async () => {
+        setState({ token: '', user: null });
+        await AsyncStorage.removeItem('@auth');
+        alert('Log Out Successfully');
+    };
+
+    const handleImageChooser = () => {
+        launchImageLibrary({ noData: true }, (response) => {
+            if (response.didCancel) {
+                console.log('User cancelled image picker');
+            } else if (response.error) {
+                console.log('ImagePicker Error: ', response.error);
+            } else if (response.assets && response.assets.length > 0) {
+                const selectedImageUri = response.assets[0].uri;
+                setProfileImage(selectedImageUri);
+                setState((prevState) => ({
+                    ...prevState,
+                    user: {
+                        ...prevState.user,
+                        profileImage: selectedImageUri,
+                    },
+                }));
+            }
+        }).catch((error) => {
+            console.error('Error opening image library: ', error);
+        });
+    };
+
     return (
         <SafeAreaView style={styles.safearea}>
             <ScrollView contentContainerStyle={styles.scrollView}>
                 <View style={styles.container}>
                     <View style={styles.profileContainer}>
-                        <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.profileImage} />
+                        <TouchableOpacity onPress={handleImageChooser}>
+                            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                        </TouchableOpacity>
                         <View style={styles.headerInfo}>
-                        <Text style={styles.name}>{state?.user.name}</Text>
+                            <Text style={styles.name}>{state?.user.name}</Text>
                             <Text style={styles.username}>{state?.user.username}</Text>
                             <Text style={styles.email}>{state?.user.email}</Text>
                         </View>
-                        </View>
-                        <View style={styles.statsContainer}>
+                    </View>
+                    <View style={styles.statsContainer}>
                         <Text style={styles.statsText}>Following</Text>
                         <Text style={styles.statsText}>Followers</Text>
-                    
-    
                     </View>
-                        
-                    
                     <TouchableOpacity style={styles.editButton}>
                         <Text style={styles.editText}>Edit</Text>
                     </TouchableOpacity>
                 </View>
-                
                 <TouchableOpacity style={styles.optionButton}>
                     <Text style={styles.optionText}>Settings</Text>
                 </TouchableOpacity>
@@ -49,7 +71,6 @@ const Profile = () => {
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                     <Text style={styles.logoutText}>Log Out</Text>
                 </TouchableOpacity>
-                
             </ScrollView>
             <FooterMenu />
         </SafeAreaView>
@@ -82,7 +103,7 @@ const styles = StyleSheet.create({
         height: 100,
         borderRadius: 50,
         marginBottom: 20,
-        flexDirection: 'row'
+        flexDirection: 'row',
     },
     headerInfo: {
         marginBottom: 20,
@@ -115,16 +136,15 @@ const styles = StyleSheet.create({
     statsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        marginVertical: 20
+        marginVertical: 20,
     },
     statsText: {
         color: 'white',
         fontSize: 16,
-        flexDirection: 'row'
+        flexDirection: 'row',
     },
     optionButton: {
-        // backgroundColor: '#1A1637',
-        borderColor:'white',
+        borderColor: 'white',
         borderWidth: 1,
         padding: 10,
         borderRadius: 30,

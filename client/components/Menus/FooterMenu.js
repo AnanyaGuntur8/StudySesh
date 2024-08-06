@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState} from 'react'
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import { useNavigation } from '@react-navigation/native';
 

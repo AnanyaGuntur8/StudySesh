@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@react-native/metro-config": "^0.74.87",
+    "expo": "^51.0.24",
+    "react-native-image-picker": "^7.1.2",
+    "typescript": "~5.3.3",
+    "@types/react": "~18.2.79"
+  }
+}
