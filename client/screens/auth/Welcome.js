@@ -5,7 +5,7 @@ const Welcome = ({navigation}) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Text style={styles.pageTitle}>@StudySesh</Text>
+        <Text style={styles.pageTitle}>StudySesh</Text>
         
         {/* Buttons container */}
         <View style={styles.buttonsContainer}>
