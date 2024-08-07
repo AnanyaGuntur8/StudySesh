@@ -19,8 +19,8 @@ const Home = () => {
 
 const styles = StyleSheet.create({
   safearea: {
-    flex: 1, // Ensure it fills the screen
-    backgroundColor: '#050315', // Background color for the SafeAreaView
+    flex: 1, 
+    backgroundColor: '#050315', 
   },
   container: {
     flex: 1,
