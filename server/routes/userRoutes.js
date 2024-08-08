@@ -14,5 +14,5 @@ router.post('/login', loginController )
 //update || put 
 
 router.put('/update-user', updateUserController)
-//export
+//export the model
 module.exports = router;
