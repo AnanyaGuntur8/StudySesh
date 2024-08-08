@@ -43,7 +43,7 @@ const [state,setState] = useContext(AuthContext)
     return (
       <SafeAreaView style={styles.safeArea}>
           <View style = {styles.container}>
-          <Text style = {styles.pageTitle}>@Login</Text>
+          <Text style = {styles.pageTitle}>Login</Text>
           <View style = {{ marginHorizontal: 20 }}>
               <InputBox 
                   inputTitle ={'Email'}
