@@ -106,4 +106,48 @@ const loginController = async (req, res) =>{
         })
     }
 }
-module.exports = {registerController, loginController}
+//updating hte user 
+const updateUserController = async (req, res) => {
+    try {
+        const { name, password, email, username } = req.body;
+        
+        // Find user by email or username
+        const user = await userModel.findOne({
+            $or: [{ email: email }, { username: username }]
+        });
+        // if (!user) {
+        //     return res.status(404).send({
+        //         success: false,
+        //         message: 'User not found'
+        //     });
+        // }
+        //password validation
+        if(password && password.length<10){
+            return res.status(400).send({
+                success:false,
+                message: 'Password is required and must be at least 10 characters'
+            })
+        }
+       const hashedPassword = password ? await hashPassword(password): undefined
+       //update the user now
+       const updatedUser = await userModel.findOneAndUpdate({email},{
+        name: name || user.name,
+        password: hashedPassword || user.password
+       }, {new: true})
+       res.status(200).send({
+        success: true,
+        message: 'Profile Updated', 
+        updatedUser
+       })
+        
+    }
+    catch(error){
+        console.log(error)
+        res.status(500).send({
+            success: false,
+            message: 'Error in update API', error
+
+        })
+    }
+}
+module.exports = {registerController, loginController,updateUserController}
