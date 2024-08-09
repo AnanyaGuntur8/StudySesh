@@ -69,11 +69,11 @@ const styles = StyleSheet.create({
 
   input: {
     borderWidth: 1,
-    borderColor: '#23CAFF',
+    // borderColor: '#23CAFF',
     borderRadius: 15,
     padding: 10,
     marginBottom: 20,
-    backgroundColor: '#050315',
+    backgroundColor: '#1A1637',
   },
   textInput: {
     color: '#FFFFFF',
