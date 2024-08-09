@@ -1,61 +1,115 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, StyleSheet, Image, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
-import { AuthContext } from '../context/authContext';
+import { View, Text, StyleSheet, Image, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import {AuthContext} from '../context/authContext'
 import FooterMenu from '../components/Menus/FooterMenu';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { launchImageLibrary } from 'react-native-image-picker';
+import axios from 'axios';
+
+
 
 
 function Profile() {
     const [state, setState] = useContext(AuthContext);
-    //make the constant set to either the user profile or set it to a blank image.
-    // const [profileImage, setProfileImage] = useState(state.user.profileImage || 'https://via.placeholder.com/100');
-    //log out function
-    const [profileImage, setProfileImage] = useState(state.user.profileImage || 'https://via.placeholder.com/100');
+    const { user } = state;
+    const [profileImage, setProfileImage] = useState(user?.profileImage || 'https://via.placeholder.com/100');
+    const [name, setName] = useState(user?.name);
+    const [username, setUsername] = useState(user?.username);
+    const [email, setEmail] = useState(user?.email);
+    const [isEditing, setIsEditing] = useState(false);
+
     const handleLogout = async () => {
         setState({ token: '', user: null });
         await AsyncStorage.removeItem('@auth');
-        alert('Log Out Successfully');
+        alert('Logged Out Successfully');
     };
-    //make the const choose photo functiont that accessthe image from the image profile picker 
-    // const handleImageChooser = () => {
-    //     launchImageLibrary({noData: true }, (response) =>{
-    //         if(response.assets){
-    //             setProfileImage(response.assets[0].uri);
-    //             setState((prevState)=>({
-    //                 ...prevState, //copy the state of the user 
-    //                 user:{
-    //                     ...prevState.user, //copy the user object of the prev state
-    //                     profileImage: response.assets[0].uri //update the profile image of the user
-    //                 },
-    //             }));
-    //         }
-    //     });
-    // };
+
+    const handleEditToggle = () => {
+        setIsEditing(!isEditing);
+    };
+
+    const handleSave = async () => {
+        if(!username || !email || !name){
+            alert('Please fill all the fields');
+        }
+        else{
+        try {
+            const { data } = await axios.put('/auth/update-user', {
+                name, username, email,
+            });
+
+            if (data.success) {
+                setState((prevState) => ({
+                    ...prevState,
+                    user: data.updatedUser,
+                }));
+                await AsyncStorage.setItem('@auth', JSON.stringify({
+                    token: state.token,
+                    user: data.updatedUser,
+                }));
+                Alert.alert('Success', 'Profile Updated Successfully');
+                setIsEditing(false);
+            } else {
+                Alert.alert('Error', data.message);
+            }
+        } catch (error) {
+            console.log('Error updating profile:', error);
+            Alert.alert('Error', 'Something went wrong');
+        }
+    }
+    };
+
     return (
         <SafeAreaView style={styles.safearea}>
             <ScrollView contentContainerStyle={styles.scrollView}>
                 <View style={styles.container}>
                     <View style={styles.profileContainer}>
-                    <TouchableOpacity>
-                        <Image source={{ uri: profileImage }} style={styles.profileImage} />
-                    </TouchableOpacity>
+                        <TouchableOpacity>
+                            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                        </TouchableOpacity>
                         <View style={styles.headerInfo}>
-                            <Text style={styles.name}>{state?.user.name}</Text>
-                            <Text style={styles.username}>{state?.user.username}</Text>
-                            <Text style={styles.email}>{state?.user.email}</Text>
+                            {isEditing ? (
+                                <>
+                                    <TextInput
+                                        style={[styles.name, styles.input]}
+                                        value={name}
+                                        onChangeText={setName}
+                                        placeholder="Name"
+                                        placeholderTextColor = "#828282"
+                                    />
+                                    <TextInput
+                                        style={[styles.username, styles.input]}
+                                        value={username}
+                                        onChangeText={setUsername}
+                                        placeholder="Username"
+                                        placeholderTextColor = "#828282"
+                                    />
+                                    <TextInput
+                                        style={[styles.email, styles.input]}
+                                        value={email}
+                                        onChangeText={setEmail}
+                                        placeholder="Email"
+                                        placeholderTextColor = "#828282"
+                                    />
+                                </>
+                            ) : (
+                                <>
+                        {/* if the state of edititng is false */}
+                            <Text style={styles.name}>{name}</Text> 
+                            
+                            <Text style={styles.username}>{username}</Text>
+                            <Text style={styles.email}>{email}</Text>
+                                </>
+                            )}
                         </View>
                     </View>
                     <View style={styles.statsContainer}>
                         <Text style={styles.statsText}>Following</Text>
                         <Text style={styles.statsText}>Followers</Text>
-
-
                     </View>
 
-
-                    <TouchableOpacity style={styles.editButton}>
-                        <Text style={styles.editText}>Edit</Text>
+                    <TouchableOpacity style={styles.editButton} onPress={isEditing ? handleSave : handleEditToggle}>
+                        <Text style={styles.editText}>{isEditing ? 'Save' : 'Edit'}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -71,7 +125,6 @@ function Profile() {
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                     <Text style={styles.logoutText}>Log Out</Text>
                 </TouchableOpacity>
-
             </ScrollView>
             <FooterMenu />
         </SafeAreaView>
@@ -109,6 +162,18 @@ const styles = StyleSheet.create({
     headerInfo: {
         marginBottom: 20,
         paddingLeft: 10,
+    },
+    input: {
+        fontSize: 15,
+        color: 'white',
+        borderWidth: 1,
+        borderRadius:10,
+        width:200,
+        height:35,
+        borderColor: 'gray',
+        paddingHorizontal: 10,
+        marginBottom: 10,
+        padding: 2,
     },
     name: {
         fontSize: 20,
