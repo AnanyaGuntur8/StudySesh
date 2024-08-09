@@ -38,6 +38,15 @@ const registerController = async (req, res)=>{
                 message:'User already registered with this email'
             });
         }
+        //made the existing username 
+        const existingUsername = await userModel.findOne({username})
+        if(existingUsername){
+            return res.status(500).send({
+                success: false,
+                message:'Username already taken'
+            });
+        }
+
         //hashed password:
         const hashedPassword = await hashPassword(password);
 
@@ -132,6 +141,7 @@ const updateUserController = async (req, res) => {
        //update the user now
        const updatedUser = await userModel.findOneAndUpdate({email},{
         name: name || user.name,
+        username: username || user.username,
         password: hashedPassword || user.password
        }, {new: true})
        res.status(200).send({
