@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     editButton: {
         backgroundColor: '#23CAFF',
         padding: 10,
-        borderRadius: 30,
+        borderRadius: 10,
         alignItems: 'center',
         marginBottom: 20,
     },
@@ -210,8 +210,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row'
     },
     optionButton: {
-        // backgroundColor: '#1A1637',
-        borderColor:'white',
+        backgroundColor: '#1A1637',
+        // borderColor:'white',
         borderWidth: 1,
         padding: 20,
         borderRadius: 22,
@@ -224,8 +224,8 @@ const styles = StyleSheet.create({
     },
     logoutButton: {
         backgroundColor: '#ff6347',
-        padding: 20,
-        borderRadius: 22,
+        padding: 10,
+        borderRadius: 10,
         alignItems: 'center',
         marginBottom: 20,
     },
