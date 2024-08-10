@@ -6,8 +6,10 @@ var { expressjwt: jwt } = require("express-jwt");
 //making the middleware
 const requireSignin = jwt({
     secret: process.env.JWT_SECRET,
-    algorithms: ["HS256"]
-        });
+    algorithms: ["HS256"],
+    credentialsRequired: true, // This ensures that req.user is set
+}).unless({ path: ['/public'] });
+
 const registerController = async (req, res)=>{
     try{
         const {name, username, email, password} = req.body
@@ -102,9 +104,9 @@ const loginController = async (req, res) =>{
                 })
             }
             //token JWT
-            const token = await JWT.sign({_id:user._id}, process.env.JWT_SECRET,{
-                expiresIn:'7d'
-            })
+            const token = JWT.sign({ _id: user._id }, process.env.JWT_SECRET, {
+                expiresIn: '7d'
+            });
             user.password = undefined;
             res.status(200).send({
                 success: true,
