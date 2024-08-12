@@ -3,11 +3,13 @@ import React, { useContext } from 'react';
 import { AuthContext } from '../context/authContext';
 import FooterMenu from '../components/Menus/FooterMenu';
 import { PostContext } from '../context/postContext';
+import { useNavigation } from '@react-navigation/native'; 
 
 const Home = () => {
   // Global state
   const [state] = useContext(AuthContext);
   const [posts] = useContext(PostContext);
+  const navigation = useNavigation();
 
   return (
     <SafeAreaView style={styles.safearea}>
@@ -17,12 +19,16 @@ const Home = () => {
             <View key={index} style={styles.row}>
               {index % 2 === 0 && (
                 <>
-                  <TouchableOpacity style={styles.postButton}>
+                  <TouchableOpacity 
+                  style={styles.postButton}
+                  onPress={() => navigation.navigate('PostCard', { post })}>
                     <Text style={styles.postText}>{post.title}</Text>
                     <Text style={styles.username}>@{post.postedBy?.username}</Text>
                   </TouchableOpacity>
                   {posts[index + 1] && (
-                    <TouchableOpacity style={styles.postButton}>
+                    <TouchableOpacity 
+                    style={styles.postButton}
+                    onPress={() => navigation.navigate('PostCard', { post: posts[index + 1]  })}>
                       <Text style={styles.postText}>{posts[index + 1].title}</Text>
                       <Text style={styles.username}>@{post.postedBy?.username}</Text>
                     </TouchableOpacity>
@@ -52,7 +58,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 80,
+    marginTop: 50,
     marginLeft: 10,
   },
   row: {
@@ -64,9 +70,9 @@ const styles = StyleSheet.create({
   postButton: {
     backgroundColor: '#00CFFF',
     padding: 10,
-    height: 140, 
+    height: 150, 
     width: '48%', 
-    justifyContent: 'center',
+    justifyContent: 'top',
     alignItems: 'left',
     borderRadius: 10,
   },
@@ -74,7 +80,7 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 20,
     fontWeight: 'bold',
-    textAlign: 'center',
+    textAlign: 'left',
   },
   username: {
     color: 'black',
