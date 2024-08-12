@@ -11,6 +11,7 @@ import Sesh from '../../screens/Sesh'
 import Profile from '../../screens/Profile'
 import HeaderMenu2 from './HeaderMenu2'
 import Groups from '../../screens/Groups'
+import PostCard from '../../screens/PostCard'
 
 const ScreenMenu = () => {
 
@@ -49,11 +50,16 @@ const ScreenMenu = () => {
             name="Groups" 
             component={Groups}
             options={{
-                header: () => <HeaderMenu2 title="Groups"/>
-                
-            }}/>
-            
-
+                header: () => <HeaderMenu2 title="Groups"/>}}/>
+{/* updating the screen menu with post */}
+            <Stack.Screen 
+            name="PostCard" 
+            component={PostCard}
+            options={{
+                headerShown: false,
+                headerBackTitle: "Back",
+            }}
+            />
             </>) : 
             (   <>
             <Stack.Screen 
