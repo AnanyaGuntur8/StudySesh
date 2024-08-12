@@ -17,7 +17,7 @@ const FooterMenu = () => {
             <Text style = {styles.text}>Sesh</Text>
         </TouchableOpacity>
     {/* notes */}
-    <TouchableOpacity>
+    <TouchableOpacity onPress={() => navigation.navigate('Groups')}>
         <FontAwesome5 name="book-open" style ={styles.iconStyle}/>
         <Text style = {styles.text}>Groups</Text>
         </TouchableOpacity>
