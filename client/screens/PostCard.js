@@ -1,39 +1,41 @@
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 
 const PostCard = ({ route }) => {
-  const { data } = route.params;
+  const { post } = route.params;  // will help you access the data points of the post
 
+//using the data recieved by the post in the return
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{data.title}</Text>
-      <Text style={styles.description}>{data.description}</Text>
-      <Text style={styles.update}>{data.update}</Text>
+      <ScrollView>
+      <Text style={styles.title}>{post.title}</Text>
+      <Text style={styles.username}>@{post.postedBy?.username}</Text>
+      <Text style={styles.content}>{post.description}</Text>
+      <Text style={styles.content}>{post.update}</Text>
+      
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#00CFFF',
-    borderRadius: 10,
+    flex: 1,
     padding: 20,
-    margin: 10,
   },
   title: {
+    paddingTop:50,
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#000',
   },
-  description: {
-    fontSize: 16,
-    color: '#000',
+  content: {
+    fontSize: 18,
     marginTop: 10,
   },
-  update: {
+  username: {
     fontSize: 16,
-    color: '#000',
     marginTop: 20,
+    fontStyle: 'italic',
   },
 });
 
