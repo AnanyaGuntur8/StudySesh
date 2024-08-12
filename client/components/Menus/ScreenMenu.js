@@ -10,6 +10,7 @@ import HeaderMenu from './HeaderMenu'
 import Sesh from '../../screens/Sesh'
 import Profile from '../../screens/Profile'
 import HeaderMenu2 from './HeaderMenu2'
+import Groups from '../../screens/Groups'
 
 const ScreenMenu = () => {
 
@@ -44,6 +45,14 @@ const ScreenMenu = () => {
                 header: () => <HeaderMenu2 title="Profile"/>
                 
             }}/>
+            <Stack.Screen 
+            name="Groups" 
+            component={Groups}
+            options={{
+                header: () => <HeaderMenu2 title="Groups"/>
+                
+            }}/>
+            
 
             </>) : 
             (   <>
