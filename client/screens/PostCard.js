@@ -3,6 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const PostCard = ({ route }) => {
   const { post } = route.params;  // receive post data from params
@@ -39,11 +40,19 @@ const PostCard = ({ route }) => {
           {/* Delivering the post details to the page and navigating it to home */}
           {/* Making the button, make an API for the notes */}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity>
-              <Text style={styles.notes}>Notes</Text>
+            <TouchableOpacity style={styles.notes}>
+              <Text style={styles.notesText} >
+                Notes
+                
+                </Text>
+                <Ionicons name='folder' style={styles.iconStyle}></Ionicons>
             </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={styles.notes}>Community</Text>
+            <TouchableOpacity style={styles.notes}>
+              <Text style={styles.notesText} >
+                Community
+                
+                </Text>
+                <Ionicons name='people-sharp' style={styles.iconStyle}></Ionicons>
             </TouchableOpacity>
           </View>
         </View>
@@ -146,7 +155,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
   },
   notes: {
-    fontSize: 16,
     borderWidth: 2,
     borderRadius: 15,
     height: 150,
@@ -156,7 +164,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     textAlign: 'center',
     marginVertical: 10,
-    fontWeight: 'bold',
+  }, 
+  notesText:{
+    fontSize: 16,
+    color: 'black',
+    fontWeight:'bold',
+    marginBottom:20,
   }
 });
 
