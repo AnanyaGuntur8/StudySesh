@@ -1,12 +1,11 @@
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import React, { useContext } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import { AuthContext } from '../context/authContext';
+import { useNavigation } from '@react-navigation/native';
 import FooterMenu from '../components/Menus/FooterMenu';
 import { PostContext } from '../context/postContext';
-import { useNavigation } from '@react-navigation/native'; 
 
 const Home = () => {
-  // Global state
   const [state] = useContext(AuthContext);
   const [posts] = useContext(PostContext);
   const navigation = useNavigation();
@@ -20,17 +19,19 @@ const Home = () => {
               {index % 2 === 0 && (
                 <>
                   <TouchableOpacity 
-                  style={styles.postButton}
-                  onPress={() => navigation.navigate('PostCard', { post })}>
+                    style={[styles.postButton, { backgroundColor: post.color || '#00CFFF' }]}  //if no color is selected make the blue the default color. 
+                    onPress={() => navigation.navigate('PostCard', { post })}
+                  >
                     <Text style={styles.postText}>{post.title}</Text>
                     <Text style={styles.username}>@{post.postedBy?.username}</Text>
                   </TouchableOpacity>
                   {posts[index + 1] && (
                     <TouchableOpacity 
-                    style={styles.postButton}
-                    onPress={() => navigation.navigate('PostCard', { post: posts[index + 1]  })}>
+                      style={[styles.postButton, { backgroundColor: posts[index + 1].color || '#00CFFF' }]}  // Apply color
+                      onPress={() => navigation.navigate('PostCard', { post: posts[index + 1] })}
+                    >
                       <Text style={styles.postText}>{posts[index + 1].title}</Text>
-                      <Text style={styles.username}>@{post.postedBy?.username}</Text>
+                      <Text style={styles.username}>@{posts[index + 1].postedBy?.username}</Text>
                     </TouchableOpacity>
                   )}
                 </>
@@ -68,7 +69,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   postButton: {
-    backgroundColor: '#00CFFF',
     padding: 10,
     height: 150, 
     width: '48%', 
