@@ -1,37 +1,42 @@
 const postModel = require("../models/postModel")
 
 //creating the post
-const createPostController = async (req, res)=> {
-    try{
-        const {title, description, update} = req.body
-        //validate 
-        if(!title || !description || !update){
-            return res.status(500).send({
+const createPostController = async (req, res) => {
+    try {
+        const { title, description, update, color } = req.body;
+
+        // Validate fields
+        if (!title || !description || !update) {
+            return res.status(400).send({
+                success: false,
                 message: "Please fill all the fields"
-            })
+            });
         }
-        const post = await postModel({
-            title, 
+
+        // Create and save the post
+        const post = await postModel.create({
+            title,
             description,
             update,
+            color,  //add the color field so that the color updates
             postedBy: req.auth._id
-
-        }).save()
+        });
+//success statement
         res.status(201).send({
-            success:true, 
+            success: true,
             message: "Post created successfully",
             post,
-        }); 
-        // console.log(req)
-    }catch (error){
-        console.log(error)
+        });
+        //error statement
+    } catch (error) {
+        console.log(error);
         res.status(500).send({
             success: false,
             message: "Error creating post API",
             error
-        })
+        });
     }
-}
+};
 // get all the posts
 const getAllPostsController = async (req, res) =>{
     try{
