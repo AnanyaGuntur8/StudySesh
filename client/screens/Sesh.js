@@ -8,6 +8,7 @@ const Sesh = ({ navigation }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [update, setUpdate] = useState("");
+  const [color, setColor] = useState('#23CAFF'); // Default color
   const [loading, setLoading] = useState(false);
 
   // Accessing the AuthContext
@@ -17,43 +18,30 @@ const Sesh = ({ navigation }) => {
   const handlePost = async () => {
     try {
       setLoading(true);
-  
-      if (!title) {
-        Alert.alert("Validation Error", "Please add a title");
+
+      if (!title || !description || !update) {
+        Alert.alert("Validation Error", "Please fill out all fields");
         return;
       }
-      if (!description) {
-        Alert.alert("Validation Error", "Please add a description");
-        return;
-      }
-      if (!update) {
-        Alert.alert("Validation Error", "Please add an update");
-        return;
-      }
-  
+
       // Send POST request
       const { data } = await axios.post("/post/create-post", {
         title,
         description,
         update,
+        color,  // Send the selected color
       }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       setLoading(false);
-  
-      // Alert with the contents of the post
+
       Alert.alert("Post Created", `Title: ${title}\nDescription: ${description}\nUpdate: ${update}`);
       navigation.navigate("Home");
     } catch (error) {
       setLoading(false);
-  
-    
-      console.log("Error Response:", error.response);
-      console.log("Error Message:", error.message);
-  
       Alert.alert("Error", error.response?.data?.message || error.message);
     }
   };
@@ -86,13 +74,25 @@ const Sesh = ({ navigation }) => {
         />
         <Text style={styles.colorLabel}>Color:</Text>
         <View style={styles.colorOptions}>
-          <TouchableOpacity style={[styles.colorOption, { backgroundColor: '#00FFFF' }]} />
-          <TouchableOpacity style={[styles.colorOption, { backgroundColor: '#FF69B4' }]} />
-          <TouchableOpacity style={[styles.colorOption, { backgroundColor: '#FFFF00' }]} />
-          <TouchableOpacity style={[styles.colorOption, { backgroundColor: '#32CD32' }]} />
+          <TouchableOpacity
+            style={[styles.colorOption, { backgroundColor: '#23CAFF' }, color === '#23CAFF' && styles.selectedColor]}
+            onPress={() => setColor('#23CAFF')}
+          />
+          <TouchableOpacity
+            style={[styles.colorOption, { backgroundColor: '#FF69B4' }, color === '#FF69B4' && styles.selectedColor]}
+            onPress={() => setColor('#FF69B4')}
+          />
+          <TouchableOpacity
+            style={[styles.colorOption, { backgroundColor: '#FFFF00' }, color === '#FFFF00' && styles.selectedColor]}
+            onPress={() => setColor('#FFFF00')}
+          />
+          <TouchableOpacity
+            style={[styles.colorOption, { backgroundColor: '#32CD32' }, color === '#32CD32' && styles.selectedColor]}
+            onPress={() => setColor('#32CD32')}
+          />
         </View>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={handlePost}>
+          <TouchableOpacity style={[styles.button, { backgroundColor: color }]} onPress={handlePost}>
             <Text style={styles.buttonText}>Make Sesh</Text>
           </TouchableOpacity>
         </View>
@@ -136,12 +136,15 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginRight: 10,
   },
+  selectedColor: {
+    borderWidth: 2,
+    borderColor: 'white',
+  },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
   },
   button: {
-    backgroundColor: 'white',
     padding: 10,
     borderRadius: 15,
     alignItems: 'center',
