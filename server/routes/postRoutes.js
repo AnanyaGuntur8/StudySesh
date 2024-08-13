@@ -9,4 +9,3 @@ router.post('/create-post', requireSignin, createPostController)
 router.get('/get-all-posts', getAllPostsController)
 
 module.exports = router;//export router 
-
