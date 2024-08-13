@@ -12,7 +12,6 @@ const userSchema = new mongoose.Schema({
         required: true, 
         unique: true,
         trim: true, 
-
     }, 
     email: {
         type: String,
@@ -25,12 +24,11 @@ const userSchema = new mongoose.Schema({
         required: [true, 'please enter password'],
         min: 10,
         max: 20,
-
     }, 
     role: {
         type: String,
         default:'user'
-    }
+    },
 }, 
     {timestamps:true}
 );
