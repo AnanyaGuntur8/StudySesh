@@ -83,6 +83,8 @@ function Profile() {
                                         onChangeText={setUsername}
                                         placeholder="Username"
                                         placeholderTextColor = "#828282"
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
                                     />
                                     <TextInput
                                         style={[styles.email, styles.input]}
