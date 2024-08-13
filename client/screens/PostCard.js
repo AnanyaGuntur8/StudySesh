@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity,Alert,Linking } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -9,6 +9,17 @@ const PostCard = ({ route }) => {
   const { post } = route.params;  // receive post data from params
   const color = post.color; // no need for default color
   const navigation = useNavigation();
+
+  //function for handeling the link passed by the user in the post:
+  const handleNotesPress = () => {
+    const driveLink = post.link;
+    if (driveLink) {
+      Linking.openURL(driveLink)
+        .catch((err) => console.error("An error occurred while opening the link", err));
+    } else {
+      Alert.alert("No link provided");
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.safearea, { backgroundColor: color }]}>
@@ -40,7 +51,7 @@ const PostCard = ({ route }) => {
           {/* Delivering the post details to the page and navigating it to home */}
           {/* Making the button, make an API for the notes */}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.notes}>
+            <TouchableOpacity style={styles.notes} onPress={handleNotesPress}>
               <Text style={styles.notesText} >
                 Notes
                 
