@@ -14,6 +14,10 @@ const postSchema = new mongoose.Schema({
         type:String,
         required:[true,'Please add an Update']
     },
+    color: {
+        type: String,  
+        default: '#23CAFF'
+    },
     postedBy: {
         type: mongoose.Schema.ObjectId,
         ref: 'User',
