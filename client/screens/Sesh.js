@@ -8,6 +8,7 @@ const Sesh = ({ navigation }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [update, setUpdate] = useState("");
+  const [link, setLink] = useState("");
   const [color, setColor] = useState('#23CAFF'); // Default color
   const [loading, setLoading] = useState(false);
 
@@ -21,6 +22,7 @@ const Sesh = ({ navigation }) => {
 
       if (!title || !description || !update) {
         Alert.alert("Validation Error", "Please fill out all fields");
+        setLoading(false);  // Ensure to stop loading state when validation fails
         return;
       }
 
@@ -29,6 +31,7 @@ const Sesh = ({ navigation }) => {
         title,
         description,
         update,
+        link,
         color,  // Send the selected color
       }, {
         headers: {
@@ -38,7 +41,7 @@ const Sesh = ({ navigation }) => {
 
       setLoading(false);
 
-      Alert.alert("Post Created", `Title: ${title}\nDescription: ${description}\nUpdate: ${update}`);
+      Alert.alert("Post Created", `Title: ${title}\nDescription: ${description}\nUpdate: ${update}\nLink: ${link}`);
       navigation.navigate("Home");
     } catch (error) {
       setLoading(false);
@@ -72,6 +75,14 @@ const Sesh = ({ navigation }) => {
           value={update}
           onChangeText={(text) => setUpdate(text)}
         />
+        <TextInput
+          style={[styles.input, styles.textInput, { height: 50 }]}
+          placeholder="Link:"
+          placeholderTextColor="white"
+          multiline={false}
+          value={link}  // Corrected value prop to be link instead of update
+          onChangeText={(text) => setLink(text)}
+        />
         <Text style={styles.colorLabel}>Color:</Text>
         <View style={styles.colorOptions}>
           <TouchableOpacity
@@ -92,8 +103,8 @@ const Sesh = ({ navigation }) => {
           />
         </View>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={[styles.button, { backgroundColor: color }]} onPress={handlePost}>
-            <Text style={styles.buttonText}>Make Sesh</Text>
+          <TouchableOpacity style={[styles.button, { backgroundColor: color }]} onPress={handlePost} disabled={loading}>
+            <Text style={styles.buttonText}>{loading ? "Posting..." : "Make Sesh"}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
