@@ -22,10 +22,10 @@ const FooterMenu = () => {
         <Text style = {styles.text}>Groups</Text>
         </TouchableOpacity>
     {/* calendar */}
-        <TouchableOpacity>
+        {/* <TouchableOpacity>
         <FontAwesome5 name="calendar" style ={styles.iconStyle}/>
         <Text style = {styles.text}>Calendar</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
         <FontAwesome5 name="user-circle" style ={styles.iconStyle}/>
         <Text style = {styles.text}>profile</Text>
