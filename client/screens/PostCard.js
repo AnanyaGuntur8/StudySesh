@@ -90,9 +90,11 @@ const styles = StyleSheet.create({
     fontSize: 40,
   },
   title: {
-    fontSize: 35,
-    fontWeight: 'bold',
-    paddingLeft: 10,
+      fontSize: 35, 
+      fontWeight: 'bold',
+      paddingLeft: 10,
+      flexShrink: 1, 
+      maxWidth: '80%', 
   },
   usernameAndJoinContainer: {
     flexDirection: 'row',
