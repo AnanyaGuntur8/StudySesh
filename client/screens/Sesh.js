@@ -2,19 +2,23 @@ import React, { useContext, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import FooterMenu from '../components/Menus/FooterMenu';
 import { AuthContext } from '../context/authContext';
+import { PostContext } from '../context/postContext';
 import axios from 'axios';
 
 const Sesh = ({ navigation }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [update, setUpdate] = useState("");
-  const [link, setLink] = useState("");
   const [color, setColor] = useState('#23CAFF'); // Default color
+  const [link, setLink] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Accessing the AuthContext
   const [state] = useContext(AuthContext); 
-  const { token } = state; 
+  const { token, user } = state; // Extract user from AuthContext
+
+  // Accessing the PostContext
+  const [posts, setPosts] = useContext(PostContext); 
 
   const handlePost = async () => {
     try {
@@ -22,7 +26,7 @@ const Sesh = ({ navigation }) => {
 
       if (!title || !description || !update) {
         Alert.alert("Validation Error", "Please fill out all fields");
-        setLoading(false);  // Ensure to stop loading state when validation fails
+        setLoading(false);
         return;
       }
 
@@ -38,11 +42,17 @@ const Sesh = ({ navigation }) => {
           Authorization: `Bearer ${token}`,
         },
       });
+      const newPost = { ...data?.post, postedBy: user };
+      setPosts([...posts, newPost]);
 
       setLoading(false);
+      Alert.alert("Post Created", `Title: ${title}\nDescription: ${description}\nUpdate: ${update}`);
+      
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Home' }],
+      });
 
-      Alert.alert("Post Created", `Title: ${title}\nDescription: ${description}\nUpdate: ${update}\nLink: ${link}`);
-      navigation.navigate("Home");
     } catch (error) {
       setLoading(false);
       Alert.alert("Error", error.response?.data?.message || error.message);
@@ -53,11 +63,12 @@ const Sesh = ({ navigation }) => {
     <SafeAreaView style={styles.safearea}>
       <ScrollView contentContainerStyle={styles.container}>
         <TextInput
-          style={[styles.input, styles.textInput, { height: 50 }]}
-          placeholder="Title:"
-          placeholderTextColor="white"
-          value={title}
-          onChangeText={(text) => setTitle(text)}
+            style={[styles.input, styles.textInput, { height: 50 }]}
+            placeholder="Title:"
+            placeholderTextColor="white"
+            value={title}
+            onChangeText={(text) => setTitle(text)}
+            maxLength={30}  // Set the character limit here
         />
         <TextInput
           style={[styles.input, styles.textInput, { height: 100 }]}
@@ -79,8 +90,7 @@ const Sesh = ({ navigation }) => {
           style={[styles.input, styles.textInput, { height: 50 }]}
           placeholder="Link:"
           placeholderTextColor="white"
-          multiline={false}
-          value={link}  // Corrected value prop to be link instead of update
+          value={link}
           onChangeText={(text) => setLink(text)}
         />
         <Text style={styles.colorLabel}>Color:</Text>
