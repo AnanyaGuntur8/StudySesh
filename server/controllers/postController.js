@@ -3,7 +3,7 @@ const postModel = require("../models/postModel")
 //creating the post
 const createPostController = async (req, res) => {
     try {
-        const { title, description, update, color } = req.body;
+        const { title, description, update, color, link } = req.body;
 
         // Validate fields
         if (!title || !description || !update) {
@@ -19,6 +19,7 @@ const createPostController = async (req, res) => {
             description,
             update,
             color,  //add the color field so that the color updates
+            link,
             postedBy: req.auth._id
         });
 //success statement
@@ -59,4 +60,30 @@ const getAllPostsController = async (req, res) =>{
         )
     }
 }
-module.exports = {createPostController, getAllPostsController}
+
+const getUserPostsController = async (req, res) => {
+    try {
+        // Find posts and populate the 'postedBy' field with user details
+        const userPosts = await postModel.find({ postedBy: req.auth._id })
+            .populate({
+                path: 'postedBy',
+                select: '_id username' // Select only the fields you need
+            });
+
+        res.status(200).send({
+            success: true,
+            message: "User posts fetched successfully",
+            userPosts,
+        });
+    } catch (error) {
+        console.error('Error in getUserPostsController:', error);
+        res.status(500).send({
+            success: false,
+            message: "Error GETUSERPOSTS API",
+            error
+        });
+    }
+}
+
+
+module.exports = {createPostController, getAllPostsController, getUserPostsController}
