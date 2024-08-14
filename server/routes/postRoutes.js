@@ -1,11 +1,12 @@
 const express = require('express');
 const { requireSignin } = require('../controllers/userController');
-const { createPostController, getAllPostsController } = require('../controllers/postController');
+const { createPostController, getAllPostsController, getUserPostsController } = require('../controllers/postController');
 const router = express.Router();//router object
 
 
 //create post and post
 router.post('/create-post', requireSignin, createPostController)
 router.get('/get-all-posts', getAllPostsController)
+router.get('/get-user-posts', requireSignin, getUserPostsController )
 
 module.exports = router;//export router 
