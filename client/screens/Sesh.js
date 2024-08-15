@@ -36,7 +36,7 @@ const Sesh = ({ navigation }) => {
         description,
         update,
         link,
-        color,  // Send the selected color
+        color,  
       }, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -80,7 +80,7 @@ const Sesh = ({ navigation }) => {
         />
         <TextInput
           style={[styles.input, styles.textInput, { height: 150 }]}
-          placeholder="Update:"
+          placeholder="Introduction:"
           placeholderTextColor="white"
           multiline={true}
           value={update}
