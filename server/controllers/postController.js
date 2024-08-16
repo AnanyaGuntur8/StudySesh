@@ -63,11 +63,10 @@ const getAllPostsController = async (req, res) =>{
 
 const getUserPostsController = async (req, res) => {
     try {
-        // Find posts and populate the 'postedBy' field with user details
         const userPosts = await postModel.find({ postedBy: req.auth._id })
             .populate({
                 path: 'postedBy',
-                select: '_id username' // Select only the fields you need
+                select: '_id username' //enforcing the username aspect, issue shown when adding posts. 
             });
 
         res.status(200).send({
@@ -86,24 +85,34 @@ const getUserPostsController = async (req, res) => {
 }
 
 //DELETING THE USER'S POSTS
-const deletePostController = async (res, req) => {
- //fill this in 
- try{
-    const {id} = req.params
-    await postModel.findByIdAndDelete({_id: id})
-    res.status(200).send({
+const deletePostController = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      // Find and delete the post by its ID
+      const deletedPost = await postModel.findByIdAndDelete(id);
+  
+      if (!deletedPost) {
+        return res.status(404).send({
+          success: false,
+          message: "Post not found",
+        }); //seeign if the post is not found send an error
+      }
+  
+      res.status(200).send({
         success: true,
-        message: "Post deleted successfully"
-    })
- }catch(error){
-    console.log(error)
-    res.status(500).send({
+        message: "Post deleted successfully",
+        deletedPost,  // Optionally return the deleted post data
+      });
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      res.status(500).send({
         success: false,
-        message: "Error delete post API",
+        message: "Error deleting post",
         error,
-    })
- }
-}
+      });
+    }
+  };
 
 
 module.exports = {createPostController, getAllPostsController, getUserPostsController, deletePostController}
