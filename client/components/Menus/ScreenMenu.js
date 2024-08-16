@@ -28,7 +28,7 @@ const ScreenMenu = () => {
             name="Home" 
             component={Home}
             options={{
-                header: () => <HeaderMenu/>
+                headerShown: false, //header is already implemented in the code
                 
             }}/>
             <Stack.Screen 
