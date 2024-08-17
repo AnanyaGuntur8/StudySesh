@@ -64,7 +64,7 @@ const PostCard = ({ route }) => {
     }
   };
 
-  if (!currentPost) return null; // Safeguard if post is still undefined for any reason
+  // Safeguard if post is still undefined for any reason
 
   return (
     <SafeAreaView style={[styles.safearea, { backgroundColor: color }]}>
