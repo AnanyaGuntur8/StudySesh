@@ -102,7 +102,7 @@ const deletePostController = async (req, res) => {
       res.status(200).send({
         success: true,
         message: "Post deleted successfully",
-        deletedPost,  // Optionally return the deleted post data
+        deletedPost,  
       });
     } catch (error) {
       console.error("Error deleting post:", error);
@@ -114,5 +114,68 @@ const deletePostController = async (req, res) => {
     }
   };
 
+  //updating my post
+  const updatePostController = async (req, res) => {
+    const { id } = req.params;
+    const { title, description, update, link, color } = req.body;
 
-module.exports = {createPostController, getAllPostsController, getUserPostsController, deletePostController}
+    try {
+        // Validate required fields
+        if (!title || !description || !update) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Title, description, and update fields are required." 
+            });
+        }
+
+        console.log('Updating post with ID:', id);
+
+        // Check if post exists
+        const existingPost = await postModel.findById(id);
+        if (!existingPost) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Post not found." 
+            });
+        }
+
+        // Update the post
+        const updatedPost = await postModel.findByIdAndUpdate(
+            id,
+            {
+                title,
+                description,
+                update,
+                link: link || '',
+                color: color || '',
+            },
+            { new: true }
+        ).populate({
+            path: 'postedBy',
+            select: '_id username' // Populate the `postedBy` field with `username`
+        });
+
+        if (!updatedPost) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Post not found during update." 
+            });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: "Post updated successfully", 
+            post: updatedPost 
+        });
+    } catch (error) {
+        console.error("Error updating post:", error); 
+        res.status(500).json({ 
+            success: false, 
+            message: "Server error", 
+            error 
+        });
+    }
+};
+
+
+module.exports = {createPostController, getAllPostsController, getUserPostsController, deletePostController, updatePostController}
