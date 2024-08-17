@@ -11,4 +11,5 @@ router.get('/get-user-posts', requireSignin, getUserPostsController )
 router.delete('/delete-post/:id', requireSignin, deletePostController)
 router.put('/update-post/:id', requireSignin, updatePostController )
 
+
 module.exports = router;//export router 
