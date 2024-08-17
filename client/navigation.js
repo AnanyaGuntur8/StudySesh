@@ -8,7 +8,7 @@ const RootNavigation = () => {
   return (
     <AuthProvider>
       <PostProvider>
-      <ScreenMenu/>
+        <ScreenMenu/>
       </PostProvider>
         
     </AuthProvider>
