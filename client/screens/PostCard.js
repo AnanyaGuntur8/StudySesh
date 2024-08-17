@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert, Linking, Modal } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -6,51 +6,65 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { AuthContext } from '../context/authContext';
 import { PostContext } from '../context/postContext';
+import EditModal from '../components/EditModal';
 
 const PostCard = ({ route }) => {
   const [loading, setLoading] = useState(false);
-  const { post, isMyGroup } = route.params;
-  const color = post.color;
-  const navigation = useNavigation();
-
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false); // State for Edit Modal visibility
   const [state] = useContext(AuthContext);
   const [posts, setPosts] = useContext(PostContext);
   const { token } = state;
+  const navigation = useNavigation();
+
+  // Destructure post and isMyGroup from route params
+  const { post, isMyGroup } = route.params;
+
+  // Check if post is not found
+  useEffect(() => {
+    if (!post) {
+      Alert.alert("Error", "Post not found");
+      navigation.goBack();
+    }
+  }, [post, navigation]);
+
+  // Get the current post from context
+  const currentPost = posts.find(p => p._id === post._id);
+  const color = currentPost?.color || '#FFFFFF'; // Fallback color
 
   const handleNotesPress = () => {
-    const driveLink = post.link;
+    const driveLink = currentPost?.link;
     if (driveLink) {
-      Linking.openURL(driveLink) //adding the link so that it will be easier for users to manage (not really want but for now), future: make a notes drive to optimize usage
+      Linking.openURL(driveLink)
         .catch((err) => console.error("An error occurred while opening the link", err));
     } else {
       Alert.alert("No link provided");
     }
   };
-//set the state of the modal. or the false state 
+
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
-//based on the id
+
   const handleDeletePost = async (id) => {
     try {
       setLoading(true);
       const { data } = await axios.delete(`/post/delete-post/${id}`, {
         headers: {
-          Authorization: `Bearer ${token}`, //INCLUDING THE TOKEN so that the user will be able to only delete it if it belongs to them
+          Authorization: `Bearer ${token}`,
         },
       });
       setLoading(false);
-      //navigate to home so that it can essentially reload
-      navigation.navigate("Home")
-      Alert.alert('Post deleted successfully'); //dont remove this when deploying the app
+      navigation.navigate("Home");
+      Alert.alert('Post deleted successfully');
       setPosts((prevPosts) => prevPosts.filter((p) => p._id !== id));
-      // navigation.goBack();
     } catch (error) {
       setLoading(false);
       alert(error.response ? error.response.data.message : error.message);
     }
   };
+
+  if (!currentPost) return null; // Safeguard if post is still undefined for any reason
 
   return (
     <SafeAreaView style={[styles.safearea, { backgroundColor: color }]}>
@@ -60,18 +74,17 @@ const PostCard = ({ route }) => {
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Entypo name='chevron-with-circle-left' style={styles.iconStyle} />
             </TouchableOpacity>
-            <Text style={styles.title}>{post.title}</Text>
-            {isMyGroup && (  
-              //activate the modal once the three dots are pressed
+            <Text style={styles.title}>{currentPost.title}</Text>
+            {isMyGroup && (
               <TouchableOpacity onPress={toggleModal} style={styles.dotsContainer}>
                 <Entypo name='dots-three-vertical' style={styles.iconStyle2} />
               </TouchableOpacity>
             )}
           </View>
-          
+
           <Text style={styles.contentDescription}>Description</Text>
-          <Text style={styles.description}>{post.description}</Text>
-          
+          <Text style={styles.description}>{currentPost.description}</Text>
+
           <View style={styles.usernameAndJoinContainer}>
             <TouchableOpacity>
               <Text style={styles.username}>@{post.postedBy?.username}</Text>
@@ -82,21 +95,19 @@ const PostCard = ({ route }) => {
           </View>
 
           <Text style={styles.contentDescription}>Introduction</Text>
-          <Text style={styles.update}>{post.update}</Text>
-          
+          <Text style={styles.update}>{currentPost.update}</Text>
+
           <View style={styles.buttonContainer}>
-            {/* handle the notes function after pressing the button */}
-            <TouchableOpacity style={styles.notes} onPress={handleNotesPress}> 
+            <TouchableOpacity style={styles.notes} onPress={handleNotesPress}>
               <Text style={styles.notesText}>Notes</Text>
               <Ionicons name='folder' style={styles.iconStyle}></Ionicons>
             </TouchableOpacity>
             <TouchableOpacity style={styles.notes}>
-              {/* make a communiyy section for the app so that the users are able to make a group within the app */}
               <Text style={styles.notesText}>Community</Text>
               <Ionicons name='people-sharp' style={styles.iconStyle}></Ionicons>
             </TouchableOpacity>
           </View>
-          
+
           <Modal
             transparent={true}
             visible={isModalVisible}
@@ -106,19 +117,18 @@ const PostCard = ({ route }) => {
               <View style={styles.modalContent}>
                 <TouchableOpacity onPress={() => {
                   toggleModal();
-                  Alert.alert("Edit option selected");
+                  setIsEditModalVisible(true); // Show Edit Modal when Edit is selected
                 }}>
                   <Text style={styles.modalText}>Edit</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => {
                   toggleModal();
-                  //adding the delte functiion, on the press of delete then it will remove the post from mongo 
                   Alert.alert(
                     "Confirm Deletion",
                     "Are you sure you want to delete this post?",
                     [
                       { text: "Cancel", style: "cancel" },
-                      { text: "Delete", onPress: () => handleDeletePost(post._id) }, // Pass the post ID
+                      { text: "Delete", onPress: () => handleDeletePost(currentPost._id) },
                     ]
                   );
                 }}>
@@ -127,12 +137,19 @@ const PostCard = ({ route }) => {
               </View>
             </TouchableOpacity>
           </Modal>
+
+          {isMyGroup && isEditModalVisible && (
+            <EditModal 
+              visible={isEditModalVisible} 
+              onClose={() => setIsEditModalVisible(false)} 
+              post={currentPost} 
+            />
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
   safearea: {
     flex: 1,
