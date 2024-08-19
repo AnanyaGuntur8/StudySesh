@@ -1,31 +1,37 @@
 const mongoose = require('mongoose');
 
-//making the schema
+// Making the schema
 const postSchema = new mongoose.Schema({
     title: {
         type: String,
-        required:[true, 'Please add Title']
+        required: [true, 'Please add Title']
     },
-    description:{
-        type:String,
-        required:[true, 'Please add Description']
+    description: {
+        type: String,
+        required: [true, 'Please add Description']
     },
-    update:{
-        type:String,
-        required:[true,'Please add an Update']
+    update: {
+        type: String,
+        required: [true, 'Please add an Update']
     },
     color: {
-        type: String,  
+        type: String,
         default: '#23CAFF'
     },
     postedBy: {
         type: mongoose.Schema.ObjectId,
         ref: 'User',
-        required:true
-    }, 
-    link:{
-        type:String,
-        required:false
-    }
-})
-module.exports = mongoose.model('Post', postSchema)
+        required: true
+    },
+    link: {
+        type: String,
+        required: false
+    },
+    followedBy: [
+        {
+            type: String, // Store usernames instead of ObjectIds
+        }
+    ]
+});
+
+module.exports = mongoose.model('Post', postSchema);
