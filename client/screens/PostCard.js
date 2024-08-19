@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Ale
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { AuthContext } from '../context/authContext';
 import { PostContext } from '../context/postContext';
@@ -11,16 +12,14 @@ import EditModal from '../components/EditModal';
 const PostCard = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false); // State for Edit Modal visibility
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false); 
   const [state] = useContext(AuthContext);
-  const [posts, setPosts] = useContext(PostContext);
-  const { token } = state;
+  const [posts, setPosts, followPost, unfollowPost] = useContext(PostContext);
+  const { token, user } = state; // Ensure you have user info from context
   const navigation = useNavigation();
 
-  // Destructure post and isMyGroup from route params
   const { post, isMyGroup } = route.params;
 
-  // Check if post is not found
   useEffect(() => {
     if (!post) {
       Alert.alert("Error", "Post not found");
@@ -28,9 +27,8 @@ const PostCard = ({ route }) => {
     }
   }, [post, navigation]);
 
-  // Get the current post from context
   const currentPost = posts.find(p => p._id === post._id);
-  const color = currentPost?.color || '#FFFFFF'; // Fallback color
+  const color = currentPost?.color || '#FFFFFF'; 
 
   const handleNotesPress = () => {
     const driveLink = currentPost?.link;
@@ -60,11 +58,39 @@ const PostCard = ({ route }) => {
       setPosts((prevPosts) => prevPosts.filter((p) => p._id !== id));
     } catch (error) {
       setLoading(false);
-      alert(error.response ? error.response.data.message : error.message);
+      Alert.alert('Error', error.response ? error.response.data.message : error.message);
     }
   };
 
-  // Safeguard if post is still undefined for any reason
+  const handleFollowPost = async () => {
+    if (!user?.username) {
+      Alert.alert("Error", "Username is required");
+      return;
+    }
+    
+    try {
+      await followPost(post._id, user.username);
+      Alert.alert('Post followed successfully');
+    } catch (error) {
+      Alert.alert('Error', error.response ? error.response.data.message : error.message);
+    }
+  };
+
+  const handleUnfollowPost = async () => {
+    if (!user?.username) {
+      Alert.alert("Error", "Username is required");
+      return;
+    }
+
+    try {
+      await unfollowPost(post._id, user.username);
+      Alert.alert('Post unfollowed successfully');
+    } catch (error) {
+      Alert.alert('Error', error.response ? error.response.data.message : error.message);
+    }
+  };
+
+  const isFollowing = post.followedBy.includes(user?.username);
 
   return (
     <SafeAreaView style={[styles.safearea, { backgroundColor: color }]}>
@@ -89,8 +115,13 @@ const PostCard = ({ route }) => {
             <TouchableOpacity>
               <Text style={styles.username}>@{post.postedBy?.username}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.joinGroup}>
-              <Text style={styles.joinButtonText}>Join Group</Text>
+            <TouchableOpacity 
+              style={styles.joinGroup}
+              onPress={isFollowing ? handleUnfollowPost : handleFollowPost}
+            >
+              <Text style={styles.joinButtonText}>
+                {isFollowing ? 'Unjoin Sesh' : 'Join Sesh'}
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -117,7 +148,7 @@ const PostCard = ({ route }) => {
               <View style={styles.modalContent}>
                 <TouchableOpacity onPress={() => {
                   toggleModal();
-                  setIsEditModalVisible(true); // Show Edit Modal when Edit is selected
+                  setIsEditModalVisible(true);
                 }}>
                   <Text style={styles.modalText}>Edit</Text>
                 </TouchableOpacity>
@@ -150,6 +181,7 @@ const PostCard = ({ route }) => {
     </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   safearea: {
     flex: 1,
