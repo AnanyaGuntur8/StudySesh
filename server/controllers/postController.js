@@ -1,4 +1,5 @@
 const postModel = require("../models/postModel")
+const userModel = require("../models/userModel")
 
 //creating the post
 const createPostController = async (req, res) => {
@@ -113,9 +114,8 @@ const deletePostController = async (req, res) => {
       });
     }
   };
-
   //updating my post
-  const updatePostController = async (req, res) => {
+const updatePostController = async (req, res) => {
     const { id } = req.params;
     const { title, description, update, link, color } = req.body;
 
@@ -176,6 +176,122 @@ const deletePostController = async (req, res) => {
         });
     }
 };
+const joinPostController = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const username = req.body.username;
+        
+        if (!username) {
+            return res.status(400).json({ message: 'Username is required' });
+        }
+        
+        // Find the post
+        const post = await postModel.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+    
+        // Find the user by username
+        const user = await userModel.findOne({ username: username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        // Check if the post is already followed by the user
+        if (post.followedBy.includes(username)) {
+            return res.status(400).json({ message: 'Already following this post' });
+        }
+        
+        // Check if the user already followed this post
+        if (user.followedPosts.includes(postId)) {
+            return res.status(400).json({ message: 'User already followed this post' });
+        }
+        
+        // Update the user's followedPosts and the post's followedBy
+        user.followedPosts.push(postId);
+        post.followedBy.push(username);
+        
+        await user.save();
+        await post.save();
+        
+        res.status(200).json({ message: 'Followed post successfully' });
+    } catch (error) {
+        console.error('Error following post:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
 
+//unfollwing the user
+const unfollowPostController = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const username = req.body.username;
+        
+        if (!username) {
+            return res.status(400).json({ message: 'Username is required' });
+        }
+        
+        // Find the post
+        const post = await postModel.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+    
+        // Find the user by username
+        const user = await userModel.findOne({ username: username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        // Check if user is following the post
+        const isFollowing = user.followedPosts.includes(postId);
 
-module.exports = {createPostController, getAllPostsController, getUserPostsController, deletePostController, updatePostController}
+        if (!isFollowing) {
+            return res.status(400).json({ message: 'Not following this post' });
+        }
+        
+        // Unfollow the post
+        user.followedPosts = user.followedPosts.filter(id => id.toString() !== postId);
+        post.followedBy = post.followedBy.filter(id => id.toString() !== user._id.toString());
+        
+        await user.save();
+        await post.save();
+        
+        res.status(200).json({ message: 'Unfollowed post successfully' });
+    } catch (error) {
+        console.error('Error processing request:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+const getPostsFollowedByUserController = async (req, res) => {
+    try {
+        // Use query parameter for testing
+        const username = req.query.username;
+
+        if (!username) {
+            return res.status(400).json({ message: 'Username is required' });
+        }
+
+        console.log('Username received:', username);
+
+        // Check if `followedBy` contains an array of strings
+        const posts = await postModel.find({ followedBy: username });
+
+        console.log('Posts found:', posts);
+
+        res.status(200).json({ posts });
+    } catch (error) {
+        console.error('Error fetching followed posts:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+module.exports = {createPostController,
+     getAllPostsController, 
+     getUserPostsController, 
+     deletePostController, 
+     updatePostController, 
+     joinPostController, 
+     unfollowPostController,
+     getPostsFollowedByUserController}
