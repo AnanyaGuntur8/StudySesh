@@ -1,9 +1,8 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert, Linking, Modal } from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { AuthContext } from '../context/authContext';
 import { PostContext } from '../context/postContext';
@@ -13,6 +12,8 @@ const PostCard = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false); 
+  const [color, setColor] = useState('#FFFFFF');
+  const [isFollowing, setIsFollowing] = useState(false);
   const [state] = useContext(AuthContext);
   const [posts, setPosts, followPost, unfollowPost] = useContext(PostContext);
   const { token, user } = state; // Ensure you have user info from context
@@ -20,6 +21,7 @@ const PostCard = ({ route }) => {
 
   const { post, isMyGroup } = route.params;
 
+  // Check if post exists
   useEffect(() => {
     if (!post) {
       Alert.alert("Error", "Post not found");
@@ -27,16 +29,39 @@ const PostCard = ({ route }) => {
     }
   }, [post, navigation]);
 
-  const currentPost = posts.find(p => p._id === post._id);
-  const color = currentPost?.color || '#FFFFFF'; 
+  // Update color and follow status when the post or user changes
+  useFocusEffect(
+    useCallback(() => {
+      if (post) {
+        const currentPost = posts.find(p => p._id === post._id);
+        if (currentPost) {
+          setColor(currentPost.color || '#FFFFFF');
+          setIsFollowing(currentPost.followedBy.includes(user?.username));
+        }
+      }
+    }, [post, posts, user?.username])
+  );
 
   const handleNotesPress = () => {
-    const driveLink = currentPost?.link;
-    if (driveLink) {
-      Linking.openURL(driveLink)
-        .catch((err) => console.error("An error occurred while opening the link", err));
+    if (isFollowing) {
+      const driveLink = post?.link;
+      if (driveLink) {
+        Linking.openURL(driveLink)
+          .catch((err) => console.error("An error occurred while opening the link", err));
+      } else {
+        Alert.alert("No link provided");
+      }
     } else {
-      Alert.alert("No link provided");
+      Alert.alert("Join the session to access the notes");
+    }
+  };
+
+  const handleCommunityPress = () => {
+    if (isFollowing) {
+      // Handle community button press here
+      Alert.alert("Community button pressed");
+    } else {
+      Alert.alert("Join the session to access the community");
     }
   };
 
@@ -70,6 +95,7 @@ const PostCard = ({ route }) => {
     
     try {
       await followPost(post._id, user.username);
+      setIsFollowing(true); // Immediately update state
       Alert.alert('Post followed successfully');
     } catch (error) {
       Alert.alert('Error', error.response ? error.response.data.message : error.message);
@@ -84,13 +110,12 @@ const PostCard = ({ route }) => {
 
     try {
       await unfollowPost(post._id, user.username);
+      setIsFollowing(false); // Immediately update state
       Alert.alert('Post unfollowed successfully');
     } catch (error) {
       Alert.alert('Error', error.response ? error.response.data.message : error.message);
     }
   };
-
-  const isFollowing = post.followedBy.includes(user?.username);
 
   return (
     <SafeAreaView style={[styles.safearea, { backgroundColor: color }]}>
@@ -100,7 +125,7 @@ const PostCard = ({ route }) => {
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Entypo name='chevron-with-circle-left' style={styles.iconStyle} />
             </TouchableOpacity>
-            <Text style={styles.title}>{currentPost.title}</Text>
+            <Text style={styles.title}>{post?.title}</Text>
             {isMyGroup && (
               <TouchableOpacity onPress={toggleModal} style={styles.dotsContainer}>
                 <Entypo name='dots-three-vertical' style={styles.iconStyle2} />
@@ -109,11 +134,11 @@ const PostCard = ({ route }) => {
           </View>
 
           <Text style={styles.contentDescription}>Description</Text>
-          <Text style={styles.description}>{currentPost.description}</Text>
+          <Text style={styles.description}>{post?.description}</Text>
 
           <View style={styles.usernameAndJoinContainer}>
             <TouchableOpacity>
-              <Text style={styles.username}>@{post.postedBy?.username}</Text>
+              <Text style={styles.username}>@{post?.postedBy?.username}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.joinGroup}
@@ -126,14 +151,14 @@ const PostCard = ({ route }) => {
           </View>
 
           <Text style={styles.contentDescription}>Introduction</Text>
-          <Text style={styles.update}>{currentPost.update}</Text>
+          <Text style={styles.update}>{post?.update}</Text>
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.notes} onPress={handleNotesPress}>
               <Text style={styles.notesText}>Notes</Text>
               <Ionicons name='folder' style={styles.iconStyle}></Ionicons>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.notes}>
+            <TouchableOpacity style={styles.notes} onPress={handleCommunityPress}>
               <Text style={styles.notesText}>Community</Text>
               <Ionicons name='people-sharp' style={styles.iconStyle}></Ionicons>
             </TouchableOpacity>
@@ -159,7 +184,7 @@ const PostCard = ({ route }) => {
                     "Are you sure you want to delete this post?",
                     [
                       { text: "Cancel", style: "cancel" },
-                      { text: "Delete", onPress: () => handleDeletePost(currentPost._id) },
+                      { text: "Delete", onPress: () => handleDeletePost(post._id) },
                     ]
                   );
                 }}>
@@ -173,7 +198,7 @@ const PostCard = ({ route }) => {
             <EditModal 
               visible={isEditModalVisible} 
               onClose={() => setIsEditModalVisible(false)} 
-              post={currentPost} 
+              post={post} 
             />
           )}
         </View>
