@@ -12,11 +12,10 @@ const Groups = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('groups');
   const [state] = useContext(AuthContext);
-  const [postsState, , followPost, unfollowPost] = useContext(PostContext);
+  const [, , followPost, unfollowPost] = useContext(PostContext); // Destructure followPost and unfollowPost
   const { token, user } = state;
   const navigation = useNavigation();
 
-  // Function to get user posts
   const getUserPosts = async () => {
     try {
       setLoading(true);
@@ -35,7 +34,6 @@ const Groups = () => {
     }
   };
 
-  // Function to get followed posts
   const getFollowedPosts = async () => {
     try {
       setLoading(true);
@@ -44,7 +42,6 @@ const Groups = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      // Update to include only posts where the logged-in user is in the followedBy array
       const filteredPosts = data?.posts.filter(post =>
         user.followedPosts.includes(post._id)
       ) || [];
@@ -57,14 +54,13 @@ const Groups = () => {
     }
   };
 
-  // Fetch posts when the active tab changes
   useEffect(() => {
     if (activeTab === 'groups') {
       getFollowedPosts();
     } else {
       getUserPosts();
     }
-  }, [activeTab, user.followedPosts]); // Added user.followedPosts as a dependency
+  }, [activeTab, user.followedPosts]); 
 
   // Group items into rows of two
   const groupItems = (items) => {
@@ -75,7 +71,7 @@ const Groups = () => {
     return grouped;
   };
 
-  // Handle follow post action
+  // following post action
   const handleFollowPost = async (postId) => {
     try {
       await followPost(postId);
@@ -86,10 +82,12 @@ const Groups = () => {
     }
   };
 
-  // Handle unfollow post action
+  // Handle unfollowing action
   const handleUnfollowPost = async (postId) => {
     try {
       await unfollowPost(postId);
+      // Remove the unfollowed post from the posts state
+      setPosts(posts.filter(post => post._id !== postId));
       Alert.alert('Success', 'Post unfollowed successfully.');
     } catch (error) {
       console.error('Failed to unfollow post:', error);
@@ -97,7 +95,7 @@ const Groups = () => {
     }
   };
 
-  // Use filtered posts for display
+  // filtering posts for display
   const displayPosts = activeTab === 'groups' ? posts : myPosts;
   const groupedPosts = groupItems(displayPosts);
 
@@ -136,16 +134,6 @@ const Groups = () => {
                     >
                       <Text style={styles.postText}>{post.title}</Text>
                       <Text style={styles.username}>@{post.postedBy?.username}</Text>
-                      {activeTab === 'groups' && (
-                        <TouchableOpacity
-                          style={styles.followButton}
-                          onPress={() => user.followedPosts.includes(post._id) ? handleUnfollowPost(post._id) : handleFollowPost(post._id)}
-                        >
-                          <Text style={styles.followButtonText}>
-                            {user.followedPosts.includes(post._id) ? 'Unfollow' : 'Follow'}
-                          </Text>
-                        </TouchableOpacity>
-                      )}
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -202,8 +190,8 @@ const styles = StyleSheet.create({
     padding: 10,
     height: 150,
     width: '48%',
-    justifyContent: 'top',
-    alignItems: 'left',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
     borderRadius: 10,
   },
   postText: {
@@ -222,17 +210,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 18,
     marginTop: 20,
-  },
-  followButton: {
-    marginTop: 10,
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    backgroundColor: '#00CFFF',
-    borderRadius: 5,
-  },
-  followButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
   },
 });
 
