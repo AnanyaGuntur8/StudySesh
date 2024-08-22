@@ -17,7 +17,9 @@ router.get('/get-user-posts', requireSignin, getUserPostsController);
 router.delete('/delete-post/:id', requireSignin, deletePostController);
 router.put('/update-post/:id', requireSignin, updatePostController);
 router.post('/join-post/:id', joinPostController);
-router.delete('/post/unfollow/:id', unfollowPostController);
+//unfollowing routes
+router.delete('/unfollow/:id', unfollowPostController);
+
 
 // Get posts followed by user (ensure this route requires signin if necessary)
 router.get('/posts-followed-by-user', getPostsFollowedByUserController);
