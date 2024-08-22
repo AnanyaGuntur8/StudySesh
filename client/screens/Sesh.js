@@ -63,12 +63,12 @@ const Sesh = ({ navigation }) => {
     <SafeAreaView style={styles.safearea}>
       <ScrollView contentContainerStyle={styles.container}>
         <TextInput
-            style={[styles.input, styles.textInput, { height: 50 }]}
-            placeholder="Title:"
-            placeholderTextColor="white"
-            value={title}
-            onChangeText={(text) => setTitle(text)}
-            maxLength={30}  // Set the character limit here
+          style={[styles.input, styles.textInput, { height: 50 }]}
+          placeholder="Title:"
+          placeholderTextColor="white"
+          value={title}
+          onChangeText={(text) => setTitle(text)}
+          maxLength={30}  // Set the character limit here
         />
         <TextInput
           style={[styles.input, styles.textInput, { height: 100 }]}
