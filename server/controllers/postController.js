@@ -152,7 +152,7 @@ const updatePostController = async (req, res) => {
             { new: true }
         ).populate({
             path: 'postedBy',
-            select: '_id username' // Populate the `postedBy` field with `username`
+            select: '_id username' // Populate the postedBy field with username
         });
 
         if (!updatedPost) {
@@ -220,53 +220,49 @@ const joinPostController = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
-
-//unfollwing the user
 const unfollowPostController = async (req, res) => {
-
-        try {
-            const postId = req.params.id;
-            const { username } = req.body;
-            
-            console.log('Received request to unfollow post:', { postId, username });
-    
-            if (!username) {
-                return res.status(400).json({ message: 'Username is required' });
-            }
-            
-            if (!mongoose.Types.ObjectId.isValid(postId)) {
-                return res.status(400).json({ message: 'Invalid post ID' });
-            }
-    
-            const post = await postModel.findById(postId);
-            if (!post) {
-                return res.status(404).json({ message: 'Post not found' });
-            }
+    try {
+        const postId = req.params.id;  // Extract postId from URL parameters
+        const username = req.body.username;  // Extract username from request body
         
-            const user = await userModel.findOne({ username });
-            if (!user) {
-                return res.status(404).json({ message: 'User not found' });
-            }
-            
-            const isFollowing = user.followedPosts.includes(postId);
-            if (!isFollowing) {
-                return res.status(400).json({ message: 'Not following this post' });
-            }
-            
-            user.followedPosts = user.followedPosts.filter(id => id.toString() !== postId);
-            post.followedBy = post.followedBy.filter(id => id.toString() !== user._id.toString());
-            
-            await user.save();
-            await post.save();
-            
-            console.log('Successfully unfollowed post:', { postId, username });
-    
-            res.status(200).json({ message: 'Unfollowed post successfully' });
-        } catch (error) {
-            console.error('Error processing request:', error.message);
-            res.status(500).json({ message: 'Server error' });
+        if (!username) {
+            return res.status(400).json({ message: 'Username is required' });
         }
-    };
+
+        // Find the post
+        const post = await postModel.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        // Find the user by username
+        const user = await userModel.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if user is following the post
+        const isFollowing = post.followedBy.includes(username);
+        if (!isFollowing) {
+            return res.status(400).json({ message: 'Not following this post' });
+        }
+
+        // Unfollow the post
+        post.followedBy = post.followedBy.filter(name => name !== username);
+        user.followedPosts = user.followedPosts.filter(id => id.toString() !== postId);
+
+        // Save the changes
+        await post.save();
+        await user.save();
+
+        console.log('Successfully unfollowed post:', { postId, username });
+
+        res.status(200).json({ message: 'Unfollowed post successfully' });
+    } catch (error) {
+        console.error('Error processing request:', error.message);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
 const getPostsFollowedByUserController = async (req, res) => {
     try {
         // Use query parameter for testing
@@ -278,10 +274,10 @@ const getPostsFollowedByUserController = async (req, res) => {
 
         console.log('Username received:', username);
 
-        // Find posts followed by the user and populate the `postedBy` field with the user's information
+        // Find posts followed by the user and populate the postedBy field with the user's information
         const posts = await postModel
             .find({ followedBy: username })
-            .populate('postedBy', 'username'); // Populate only the username field of the `postedBy` user
+            .populate('postedBy', 'username'); // Populate only the username field of the postedBy user
 
         console.log('Posts found:', posts);
 
