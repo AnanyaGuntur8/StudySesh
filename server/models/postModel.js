@@ -27,6 +27,10 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    // communityLink: {
+    //     type: String,
+    //     required: false
+    // },
     followedBy: [
         {
             type: String, // Store usernames instead of ObjectIds
