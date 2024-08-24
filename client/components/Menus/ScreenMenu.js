@@ -12,6 +12,7 @@ import Profile from '../../screens/Profile'
 import HeaderMenu2 from './HeaderMenu2'
 import Groups from '../../screens/Groups'
 import PostCard from '../../screens/PostCard'
+import Community from '../../screens/Community'
 
 const ScreenMenu = () => {
 
@@ -55,6 +56,14 @@ const ScreenMenu = () => {
             <Stack.Screen 
             name="PostCard" 
             component={PostCard}
+            options={{
+                headerShown: false,
+                headerBackTitle: "Back",
+            }}
+            />
+            <Stack.Screen 
+            name="Community" 
+            component={Community}
             options={{
                 headerShown: false,
                 headerBackTitle: "Back",

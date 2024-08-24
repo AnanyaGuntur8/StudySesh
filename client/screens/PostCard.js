@@ -58,8 +58,7 @@ const PostCard = ({ route }) => {
 
   const handleCommunityPress = () => {
     if (isFollowing) {
-      // Handle community button press here
-      Alert.alert("Community button pressed");
+      navigation.navigate("Community", { post, color });
     } else {
       Alert.alert("Join the session to access the community");
     }
@@ -206,7 +205,6 @@ const PostCard = ({ route }) => {
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
   safearea: {
     flex: 1,
