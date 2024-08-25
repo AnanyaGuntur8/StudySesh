@@ -18,13 +18,24 @@ app.use(express.json());
 app.use(morgan('dev')); 
 
 // Socket.IO connection handling
-io.on('connection', (socket) => { 
-    console.log('A user connected'); 
-    
-    socket.on('disconnect', () => { 
-        console.log('Client disconnected'); 
-    }); 
-}); 
+io.on('connection', (socket) => {
+    console.log('A user connected');
+
+    // Join a room for a specific post
+    socket.on('joinPost', (postId) => {
+        socket.join(postId);
+        console.log(`User joined post ${postId}`);
+    });
+
+    // Listen for messages sent to a specific post
+    socket.on('sendMessage', ({ message, postId }) => {
+        io.to(postId).emit('newMessage', { message, sender: socket.id });
+    });
+
+    socket.on('disconnect', () => {
+        console.log('A user disconnected');
+    });
+});
 
 // Routes
 app.use('/api/v1/auth', require('./routes/userRoutes'));
