@@ -1,12 +1,21 @@
-import io from 'socket.io-client';
+import { useEffect } from 'react';
+import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:8080'); // Adjust the URL as necessary
+let socket;
 
-socket.on('connect', () => {
-    console.log('Connected to server');
-});
+const getSocket = () => {
+    if (!socket) {
+        socket = io('http://192.168.1.105:8080'); // Adjust the URL as necessary
 
-socket.on('disconnect', () => {
-    console.log('Disconnected from server');
-});
-export default socket;
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+    }
+    return socket;
+};
+
+export { getSocket };
