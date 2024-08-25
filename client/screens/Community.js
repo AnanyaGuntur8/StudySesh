@@ -42,12 +42,14 @@ const Community = ({ route }) => {
         socket.emit('joinRoom', postId);
 
         // Listen for new messages
-        socket.on('receiveMessage', (message) => {
+        const handleReceiveMessage = (message) => {
             setMessages(prevMessages => [message, ...prevMessages]);
-        });
+        };
+
+        socket.on('receiveMessage', handleReceiveMessage);
 
         return () => {
-            socket.off('receiveMessage');
+            socket.off('receiveMessage', handleReceiveMessage);
             socket.emit('leaveRoom', postId);
         };
     }, [postId, token]);
@@ -74,7 +76,7 @@ const Community = ({ route }) => {
             const socket = getSocket(); // Get the socket instance to emit the message
             socket.emit('sendMessage', response.data.chatMessage);
 
-            setMessages(prevMessages => [response.data.chatMessage, ...prevMessages]);
+            // Move the message addition to the socket listener
             setNewMessage('');
         } catch (error) {
             console.error('Error sending message:', error.response?.data || error.message);
@@ -92,7 +94,7 @@ const Community = ({ route }) => {
                 <FlatList
                     data={messages}
                     inverted
-                    keyExtractor={(item) => item.id ? item.id : Math.random().toString()} 
+                    keyExtractor={(item) => item.id ? item.id : Math.random().toString()}
                     renderItem={({ item }) => (
                         <View style={[styles.messageContainer, { backgroundColor: postColor }]}>
                             <Text style={styles.message}>
