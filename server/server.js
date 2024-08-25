@@ -17,24 +17,21 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
+
+
+io.on('connection', (socket) => {
+    console.log('a user connected');
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected');
+    });
+});
 app.use('/api/v1/auth', require('./routes/userRoutes'));
 app.use('/api/v1/post', require('./routes/postRoutes'));
 app.use('/api/v1/chat', require('./routes/chatRoutes'));
 
-io.on('connection', (socket) => {
-//   console.log('New client connected');
-
-  socket.on('message', (message) => {
-    io.emit('message', message); // Broadcast the message to all clients
-  });
-
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
-  });
-});
-
 const PORT = process.env.PORT || 8080;
 
 server.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+    console.log(`Server listening on port ${PORT}`);
 });
