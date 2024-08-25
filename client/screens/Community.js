@@ -2,86 +2,85 @@ import React, { useContext, useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { AuthContext } from '../context/authContext';
-import socket from '../components/utils/socket'; // Adjust the path to your socket file
+import { getSocket } from '../components/utils/socket'; // Adjust the path to your socket file
 
 const Community = ({ route }) => {
-    const [loading, setLoading] = useState(true); // Set loading to true initially
+    const [loading, setLoading] = useState(true);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [state] = useContext(AuthContext);
-    const { token, user } = state; // Destructure user
-    const { username } = user; // Destructure username from user
+    const { token, user } = state;
+    const { username } = user;
     const { post } = route.params;
 
-    // Extract color from the post
-    const postColor = post.color || '#007bff'; // Default color if post.color is undefined
+    const postColor = post.color || '#007bff';
+    const postId = post._id;
 
     useEffect(() => {
         const fetchMessages = async () => {
             try {
-                const response = await axios.get(`/chat/${post._id}/messages`, {
+                const response = await axios.get(`/chat/${postId}/messages`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                setMessages(response.data.messages); // Assuming the response structure
+                setMessages(response.data.messages);
             } catch (error) {
                 console.log('Error fetching messages:', error);
                 Alert.alert('Error', error.response ? error.response.data.message : error.message);
             } finally {
-                setLoading(false); // Set loading to false in finally block
+                setLoading(false);
             }
         };
 
         fetchMessages();
 
+        // Get the socket instance
+        const socket = getSocket();
+
         // Join the specific room for this post
-        socket.emit('joinRoom', post._id);
+        socket.emit('joinRoom', postId);
 
         // Listen for new messages
         socket.on('receiveMessage', (message) => {
-            setMessages(prevMessages => [message, ...prevMessages]); // Add new message at the top
+            setMessages(prevMessages => [message, ...prevMessages]);
         });
 
         return () => {
-            socket.off('receiveMessage'); // Clean up the listener on component unmount
-            socket.emit('leaveRoom', post._id); // Leave the room when component unmounts
+            socket.off('receiveMessage');
+            socket.emit('leaveRoom', postId);
         };
-    }, [post._id, token]);
+    }, [postId, token]);
 
     const handleSendMessage = async () => {
         if (!newMessage.trim()) {
             Alert.alert('Error', 'Message cannot be empty');
             return;
         }
-    
+
         try {
             const messageData = {
                 message: newMessage,
                 username: user.username,
-                postId: post._id, // Include post ID
+                postId: postId,
             };
-    
-            // Make API call to send the message
-            const response = await axios.post(`/chat/${post._id}/messages`, messageData, {
+
+            const response = await axios.post(`/chat/${postId}/messages`, messageData, {
                 headers: {
-                    Authorization: `Bearer ${token}`, // Include token for authorization
+                    Authorization: `Bearer ${token}`,
                 },
             });
-    
-            // Emit the message through socket
-            socket.emit('sendMessage', response.data.chatMessage); // Use the saved message from the response
-    
-            // Optionally, you can also update local state for immediate feedback
+
+            const socket = getSocket(); // Get the socket instance to emit the message
+            socket.emit('sendMessage', response.data.chatMessage);
+
             setMessages(prevMessages => [response.data.chatMessage, ...prevMessages]);
-    
-            setNewMessage(''); // Clear the input field
+            setNewMessage('');
         } catch (error) {
             console.error('Error sending message:', error.response?.data || error.message);
             Alert.alert('Error', error.response ? error.response.data.message : error.message);
         }
     };
-    
 
     return (
         <View style={[styles.container, { backgroundColor: postColor }]}>
@@ -93,7 +92,7 @@ const Community = ({ route }) => {
                 <FlatList
                     data={messages}
                     inverted
-                    keyExtractor={item => item._id}
+                    keyExtractor={(item) => item.id ? item.id : Math.random().toString()} 
                     renderItem={({ item }) => (
                         <View style={[styles.messageContainer, { backgroundColor: postColor }]}>
                             <Text style={styles.message}>
