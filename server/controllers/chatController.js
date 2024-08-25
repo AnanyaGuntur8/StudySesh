@@ -37,47 +37,50 @@ const getMessagesController = async (req, res) => {
 
 
 // Post Message Controller
-const postMessageController = async (req, res) => {
-   try {
-       const { message, username } = req.body;
-       const { postId } = req.params;
+const postMessageController = async (req, res, io) => {
+    try {
+        const { message, username } = req.body;
+        const { postId } = req.params;
 
+        if (!username) {
+            return res.status(401).json({ message: 'No username provided' });
+        }
 
-       if (!username) {
-           return res.status(401).json({ message: 'No username provided' });
-       }
+        // Validate the message
+        if (!message || typeof message !== 'string') {
+            return res.status(400).json({ message: 'Message is required' });
+        }
 
+        // Check if the post exists
+        const post = await postModel.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
 
-       // Check if the post exists
-       const post = await postModel.findById(postId);
-       if (!post) {
-           return res.status(404).json({ message: 'Post not found' });
-       }
+        // Create a new chat message
+        const chatMessage = new chatModel({
+            message,
+            sender: username,
+            post: postId,
+        });
 
+        // Save the chat message to the database
+        await chatMessage.save();
 
-       // Create a new chat message
-       const chatMessage = new chatModel({
-           message,
-           sender: username,
-           post: postId,
-       });
+        // Emit the message to all connected clients
+        io.emit('receiveMessage', chatMessage);
 
-
-       // Save the chat message to the database
-       await chatMessage.save();
-
-
-
-
-       // Send a success response
-       res.status(201).json({
-           success: true,
-           message: 'Message sent successfully',
-           chatMessage,
-       });
-   } catch (error) {
-       console.error('Error posting message:', error);
-       res.status(500).json({ message: 'Server error' });
-   }
+        // Send a success response
+        res.status(201).json({
+            success: true,
+            message: 'Message sent successfully',
+            chatMessage,
+        });
+    } catch (error) {
+        console.error('Error posting message:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
 };
+
+
 module.exports = { postMessageController, getMessagesController };
