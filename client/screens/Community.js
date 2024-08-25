@@ -5,7 +5,7 @@ import { AuthContext } from '../context/authContext';
 import socket from '../components/utils/socket'; // Adjust the path to your socket file
 
 const Community = ({ route }) => {
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true); // Set loading to true initially
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [state] = useContext(AuthContext);
@@ -16,37 +16,35 @@ const Community = ({ route }) => {
     // Extract color from the post
     const postColor = post.color || '#007bff'; // Default color if post.color is undefined
 
-    console.log('Username from context:', username); // Debugging
-
     useEffect(() => {
         const fetchMessages = async () => {
             try {
-                setLoading(true);
                 const response = await axios.get(`/chat/${post._id}/messages`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                console.log('Fetched Messages:', response.data.messages);
                 setMessages(response.data.messages); // Assuming the response structure
-                setLoading(false);
             } catch (error) {
-                setLoading(false);
                 console.log('Error fetching messages:', error);
                 Alert.alert('Error', error.response ? error.response.data.message : error.message);
+            } finally {
+                setLoading(false); // Set loading to false in finally block
             }
         };
 
         fetchMessages();
 
+        // Join the specific room for this post
+        socket.emit('joinRoom', post._id);
+
         // Listen for new messages
-        socket.emit('joinRoom', post._id); // Join the specific room for this post
-        socket.on('message', (message) => {
+        socket.on('receiveMessage', (message) => {
             setMessages(prevMessages => [message, ...prevMessages]); // Add new message at the top
         });
 
         return () => {
-            socket.off('message'); // Clean up the listener on component unmount
+            socket.off('receiveMessage'); // Clean up the listener on component unmount
             socket.emit('leaveRoom', post._id); // Leave the room when component unmounts
         };
     }, [post._id, token]);
@@ -75,8 +73,7 @@ const Community = ({ route }) => {
             socket.emit('sendMessage', response.data.chatMessage); // Use the saved message from the response
     
             // Optionally, you can also update local state for immediate feedback
-            const chatMessage = { ...response.data.chatMessage, _id: response.data.chatMessage._id }; // Use the ID from the saved message
-            setMessages(prevMessages => [chatMessage, ...prevMessages]);
+            setMessages(prevMessages => [response.data.chatMessage, ...prevMessages]);
     
             setNewMessage(''); // Clear the input field
         } catch (error) {
