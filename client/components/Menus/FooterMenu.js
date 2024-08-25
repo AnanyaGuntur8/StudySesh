@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import React, { useState} from 'react'
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from '@react-navigation/native';
 
 const FooterMenu = () => {
@@ -22,10 +23,10 @@ const FooterMenu = () => {
         <Text style = {styles.text}>Groups</Text>
         </TouchableOpacity>
     {/* calendar */}
-        {/* <TouchableOpacity>
-        <FontAwesome5 name="calendar" style ={styles.iconStyle}/>
-        <Text style = {styles.text}>Calendar</Text>
-        </TouchableOpacity> */}
+        <TouchableOpacity onPress={() => navigation.navigate('Comm')}>
+        <Ionicons name='people-sharp' style={styles.iconStyle}></Ionicons>
+        <Text style = {styles.text}>Communities</Text>
+        </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
         <FontAwesome5 name="user-circle" style ={styles.iconStyle}/>
         <Text style = {styles.text}>profile</Text>
