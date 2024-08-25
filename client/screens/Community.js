@@ -41,9 +41,14 @@ const Community = ({ route }) => {
         // Join the specific room for this post
         socket.emit('joinRoom', postId);
 
-        // Listen for new messages
+        // Listen for new messagessl
         const handleReceiveMessage = (message) => {
+            if (message.post == postId){
             setMessages(prevMessages => [message, ...prevMessages]);
+            }
+            else{
+                message.postId = postId
+            }
         };
 
         socket.on('receiveMessage', handleReceiveMessage);
