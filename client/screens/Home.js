@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 50,
+    marginTop: 20,
     marginLeft: 10,
   },
   row: {
