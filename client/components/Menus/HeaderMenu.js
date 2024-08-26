@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, TextInput } fro
 import React, { useState } from 'react';
 import Entypo from 'react-native-vector-icons/Entypo';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const HeaderMenu = ({ title, onSearch }) => {
   const [search, setSearch] = useState('');
@@ -25,11 +26,11 @@ const HeaderMenu = ({ title, onSearch }) => {
           </Text>
           <View style={styles.iconsContainer}>
             <TouchableOpacity>
-              <Entypo name='notification' style={styles.iconStyle} />
+              <AntDesign name='book' style={styles.iconStyle} />
             </TouchableOpacity>
-            <TouchableOpacity>
+            {/* <TouchableOpacity>
               <MaterialCommunityIcons name='message-badge' style={styles.anothericon} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
         <TextInput
