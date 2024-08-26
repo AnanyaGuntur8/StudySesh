@@ -43,7 +43,9 @@ const PostCard = ({ route }) => {
   );
 
   const handleNotesPress = () => {
-    if (isFollowing) {
+    const isMaker = post?.postedBy?.username === user?.username;
+    
+    if (isMaker || isFollowing) {
       const driveLink = post?.link;
       if (driveLink) {
         Linking.openURL(driveLink)
@@ -57,7 +59,9 @@ const PostCard = ({ route }) => {
   };
 
   const handleCommunityPress = () => {
-    if (isFollowing) {
+    const isMaker = post?.postedBy?.username === user?.username;
+
+    if (isMaker || isFollowing) {
       navigation.navigate("Community", { post, color });
     } else {
       Alert.alert("Join the session to access the community");
@@ -139,14 +143,16 @@ const PostCard = ({ route }) => {
             <TouchableOpacity>
               <Text style={styles.username}>@{post?.postedBy?.username}</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.joinGroup}
-              onPress={isFollowing ? handleUnfollowPost : handleFollowPost}
-            >
-              <Text style={styles.joinButtonText}>
-                {isFollowing ? 'Unjoin Sesh' : 'Join Sesh'}
-              </Text>
-            </TouchableOpacity>
+            {post?.postedBy?.username !== user?.username && (
+              <TouchableOpacity 
+                style={styles.joinGroup}
+                onPress={isFollowing ? handleUnfollowPost : handleFollowPost}
+              >
+                <Text style={styles.joinButtonText}>
+                  {isFollowing ? 'Unjoin Sesh' : 'Join Sesh'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <Text style={styles.contentDescription}>Introduction</Text>
@@ -205,6 +211,8 @@ const PostCard = ({ route }) => {
     </SafeAreaView>
   );
 };
+
+
 const styles = StyleSheet.create({
   safearea: {
     flex: 1,
@@ -268,9 +276,8 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   joinGroup: {
-    fontSize: 16,
-    height: 40,
-    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 1,
     width: 100,
     justifyContent: 'center',
     alignItems: 'center',
