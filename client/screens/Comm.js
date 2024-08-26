@@ -8,15 +8,13 @@ import { PostContext } from '../context/postContext';
 
 const Comm = () => {
   const [posts, setPosts] = useState([]);
-  const [myPosts, setMyPosts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('groups');
   const [state] = useContext(AuthContext);
-  const [, , followPost, unfollowPost] = useContext(PostContext);
   const { token, user } = state;
   const navigation = useNavigation();
 
-  const getUserPosts = async () => {
+  // Fetch all posts including user posts and followed posts
+  const getAllPosts = async () => {
     try {
       setLoading(true);
       const { data } = await axios.get('/post/get-user-posts', {
@@ -24,8 +22,16 @@ const Comm = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setPosts(data?.allPosts || []);
-      setMyPosts(data?.userPosts || []);
+
+      const userPosts = data?.userPosts || [];
+      const followedPosts = await axios.get(`/post/posts-followed-by-user?username=${user.username}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      const combinedPosts = [...userPosts, ...followedPosts.data.posts];
+      setPosts(combinedPosts);
     } catch (error) {
       console.error('Failed to load posts:', error);
       Alert.alert('Error', 'Failed to load posts. Please try again later.');
@@ -34,36 +40,9 @@ const Comm = () => {
     }
   };
 
-  const getFollowedPosts = async () => {
-    try {
-      setLoading(true);
-      const { data } = await axios.get(`/post/posts-followed-by-user?username=${user.username}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const filteredPosts = data?.posts.filter(post =>
-        user.followedPosts.includes(post._id)
-      ) || [];
-      setPosts(filteredPosts);
-    } catch (error) {
-      console.error('Failed to load followed posts:', error);
-      Alert.alert('Error', 'Failed to load followed posts. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (activeTab === 'groups') {
-      getFollowedPosts();
-    } else {
-      getUserPosts();
-    }
-  }, [activeTab, user.followedPosts]);
-
-  // filtering posts for display
-  const displayPosts = activeTab === 'groups' ? posts : myPosts;
+    getAllPosts();
+  }, [user.username]);
 
   return (
     <SafeAreaView style={styles.safearea}>
@@ -71,13 +50,13 @@ const Comm = () => {
         <View style={styles.container}>
           {loading ? (
             <ActivityIndicator size="large" color="#FFFFFF" />
-          ) : displayPosts.length > 0 ? (
-            displayPosts.map((post) => (
+          ) : posts.length > 0 ? (
+            posts.map((post) => (
               <TouchableOpacity
                 key={post._id}
                 style={[styles.postButton, { backgroundColor: post.color || '#00CFFF' }]}
                 onPress={() => {
-                  navigation.navigate('Community', { post }); // Navigate to chat screen
+                  navigation.navigate('Community', { post }); // Navigate to community screen
                 }}
               >
                 <Text style={styles.postText}>{post.title}</Text>
