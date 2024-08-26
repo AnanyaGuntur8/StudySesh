@@ -137,6 +137,10 @@ const Community = ({ route }) => {
                         placeholder="Type your message..."
                         value={newMessage}
                         onChangeText={setNewMessage}
+                        multiline
+                        numberOfLines={4} 
+                        scrollEnabled
+                        textAlignVertical="top"
                     />
                     <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
                         <Text style={styles.sendButtonText}>Send</Text>
@@ -203,6 +207,7 @@ const styles = StyleSheet.create({
         marginLeft: 15,
         marginRight: 15,
         paddingBottom: 20,
+        
     },
     input: {
         flex: 1,
@@ -212,6 +217,7 @@ const styles = StyleSheet.create({
         padding: 10,
         marginRight: 10,
         color: 'black',
+        maxHeight: 200,
     },
     sendButton: {
         backgroundColor: 'black',
