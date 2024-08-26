@@ -62,42 +62,8 @@ const Comm = () => {
     }
   }, [activeTab, user.followedPosts]);
 
-  // Group items into rows of two
-  const groupItems = (items) => {
-    const grouped = [];
-    for (let i = 0; i < items.length; i += 2) {
-      grouped.push(items.slice(i, i + 2));
-    }
-    return grouped;
-  };
-
-  // following post action
-  const handleFollowPost = async (postId) => {
-    try {
-      await followPost(postId);
-      Alert.alert('Success', 'Post followed successfully.');
-    } catch (error) {
-      console.error('Failed to follow post:', error);
-      Alert.alert('Error', 'Failed to follow post. Please try again later.');
-    }
-  };
-
-  // Handle unfollowing action
-  const handleUnfollowPost = async (postId) => {
-    try {
-      await unfollowPost(postId);
-      // Remove the unfollowed post from the posts state
-      setPosts(posts.filter(post => post._id !== postId));
-      Alert.alert('Success', 'Post unfollowed successfully.');
-    } catch (error) {
-      console.error('Failed to unfollow post:', error);
-      Alert.alert('Error', 'Failed to unfollow post. Please try again later.');
-    }
-  };
-
   // filtering posts for display
   const displayPosts = activeTab === 'groups' ? posts : myPosts;
-  const groupedPosts = groupItems(displayPosts);
 
   return (
     <SafeAreaView style={styles.safearea}>
@@ -105,22 +71,18 @@ const Comm = () => {
         <View style={styles.container}>
           {loading ? (
             <ActivityIndicator size="large" color="#FFFFFF" />
-          ) : groupedPosts.length > 0 ? (
-            groupedPosts.map((row, rowIndex) => (
-              <View key={rowIndex} style={styles.row}>
-                {row.map((post) => (
-                  <TouchableOpacity
-                    key={post._id}
-                    style={[styles.postButton, { backgroundColor: post.color || '#00CFFF' }]}
-                    onPress={() => {
-                      navigation.navigate('Community', { post }); // Navigate to chat screen
-                    }}
-                  >
-                    <Text style={styles.postText}>{post.title}</Text>
-                    <Text style={styles.username}>@{post.postedBy?.username}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+          ) : displayPosts.length > 0 ? (
+            displayPosts.map((post) => (
+              <TouchableOpacity
+                key={post._id}
+                style={[styles.postButton, { backgroundColor: post.color || '#00CFFF' }]}
+                onPress={() => {
+                  navigation.navigate('Community', { post }); // Navigate to chat screen
+                }}
+              >
+                <Text style={styles.postText}>{post.title}</Text>
+                <Text style={styles.username}>@{post.postedBy?.username}</Text>
+              </TouchableOpacity>
             ))
           ) : (
             <Text style={styles.noPostsText}>No posts available</Text>
@@ -136,6 +98,7 @@ const styles = StyleSheet.create({
   safearea: {
     flex: 1,
     backgroundColor: '#050315',
+    paddingBottom: 50,
   },
   scrollView: {
     flexGrow: 1,
@@ -143,18 +106,14 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    marginTop: 10,
+    marginTop: 30,
     marginLeft: 10,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
   },
   postButton: {
     padding: 10,
-    height: 150,
-    width: '48%',
+    height: 100,
+    width: '100%', // Make the button take full width
+    marginBottom: 10, // Add some space between posts
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     borderRadius: 10,
