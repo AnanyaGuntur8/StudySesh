@@ -1,5 +1,8 @@
 import React, { useContext, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import {
+  View, Text, StyleSheet, SafeAreaView, TextInput,
+  TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, Platform
+} from 'react-native';
 import FooterMenu from '../components/Menus/FooterMenu';
 import { AuthContext } from '../context/authContext';
 import { PostContext } from '../context/postContext';
@@ -15,7 +18,7 @@ const Sesh = ({ navigation }) => {
 
   // Accessing the AuthContext
   const [state] = useContext(AuthContext); 
-  const { token, user } = state; // Extract user from AuthContext
+  const { token, user } = state;
 
   // Accessing the PostContext
   const [posts, setPosts] = useContext(PostContext); 
@@ -42,12 +45,19 @@ const Sesh = ({ navigation }) => {
           Authorization: `Bearer ${token}`,
         },
       });
+
       const newPost = { ...data?.post, postedBy: user };
       setPosts([...posts, newPost]);
 
       setLoading(false);
       Alert.alert("Post Created", `Title: ${title}\nDescription: ${description}\nUpdate: ${update}`);
       
+      // Reset form fields
+      setTitle("");
+      setDescription("");
+      setUpdate("");
+      setLink("");
+
       navigation.reset({
         index: 0,
         routes: [{ name: 'Home' }],
@@ -60,66 +70,72 @@ const Sesh = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safearea}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <TextInput
-          style={[styles.input, styles.textInput, { height: 50 }]}
-          placeholder="Title:"
-          placeholderTextColor="white"
-          value={title}
-          onChangeText={(text) => setTitle(text)}
-          maxLength={30}  // Set the character limit here
-        />
-        <TextInput
-          style={[styles.input, styles.textInput, { height: 100 }]}
-          placeholder="Description:"
-          placeholderTextColor="white"
-          multiline={true}
-          value={description}
-          onChangeText={(text) => setDescription(text)}
-        />
-        <TextInput
-          style={[styles.input, styles.textInput, { height: 150 }]}
-          placeholder="Introduction:"
-          placeholderTextColor="white"
-          multiline={true}
-          value={update}
-          onChangeText={(text) => setUpdate(text)}
-        />
-        <TextInput
-          style={[styles.input, styles.textInput, { height: 50 }]}
-          placeholder="Link:"
-          placeholderTextColor="white"
-          value={link}
-          onChangeText={(text) => setLink(text)}
-        />
-        <Text style={styles.colorLabel}>Color:</Text>
-        <View style={styles.colorOptions}>
-          <TouchableOpacity
-            style={[styles.colorOption, { backgroundColor: '#23CAFF' }, color === '#23CAFF' && styles.selectedColor]}
-            onPress={() => setColor('#23CAFF')}
+    <KeyboardAvoidingView
+      style={styles.safearea}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={1} 
+    >
+      <SafeAreaView style={styles.safearea}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <TextInput
+            style={[styles.input, styles.textInput, { height: 50 }]}
+            placeholder="Title:"
+            placeholderTextColor="white"
+            value={title}
+            onChangeText={(text) => setTitle(text)}
+            maxLength={30}  // Set the character limit here
           />
-          <TouchableOpacity
-            style={[styles.colorOption, { backgroundColor: '#FF69B4' }, color === '#FF69B4' && styles.selectedColor]}
-            onPress={() => setColor('#FF69B4')}
+          <TextInput
+            style={[styles.input, styles.textInput, { height: 100 }]}
+            placeholder="Description:"
+            placeholderTextColor="white"
+            multiline={true}
+            value={description}
+            onChangeText={(text) => setDescription(text)}
           />
-          <TouchableOpacity
-            style={[styles.colorOption, { backgroundColor: '#FFFF00' }, color === '#FFFF00' && styles.selectedColor]}
-            onPress={() => setColor('#FFFF00')}
+          <TextInput
+            style={[styles.input, styles.textInput, { height: 150 }]}
+            placeholder="Introduction:"
+            placeholderTextColor="white"
+            multiline={true}
+            value={update}
+            onChangeText={(text) => setUpdate(text)}
           />
-          <TouchableOpacity
-            style={[styles.colorOption, { backgroundColor: '#32CD32' }, color === '#32CD32' && styles.selectedColor]}
-            onPress={() => setColor('#32CD32')}
+          <TextInput
+            style={[styles.input, styles.textInput, { height: 50 }]}
+            placeholder="Link:"
+            placeholderTextColor="white"
+            value={link}
+            onChangeText={(text) => setLink(text)}
           />
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={[styles.button, { backgroundColor: color }]} onPress={handlePost} disabled={loading}>
-            <Text style={styles.buttonText}>{loading ? "Posting..." : "Make Sesh"}</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-      <FooterMenu />
-    </SafeAreaView>
+          <Text style={styles.colorLabel}>Color:</Text>
+          <View style={styles.colorOptions}>
+            <TouchableOpacity
+              style={[styles.colorOption, { backgroundColor: '#23CAFF' }, color === '#23CAFF' && styles.selectedColor]}
+              onPress={() => setColor('#23CAFF')}
+            />
+            <TouchableOpacity
+              style={[styles.colorOption, { backgroundColor: '#FF69B4' }, color === '#FF69B4' && styles.selectedColor]}
+              onPress={() => setColor('#FF69B4')}
+            />
+            <TouchableOpacity
+              style={[styles.colorOption, { backgroundColor: '#FFFF00' }, color === '#FFFF00' && styles.selectedColor]}
+              onPress={() => setColor('#FFFF00')}
+            />
+            <TouchableOpacity
+              style={[styles.colorOption, { backgroundColor: '#32CD32' }, color === '#32CD32' && styles.selectedColor]}
+              onPress={() => setColor('#32CD32')}
+            />
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: color }]} onPress={handlePost} disabled={loading}>
+              <Text style={styles.buttonText}>{loading ? "Posting..." : "Make Sesh"}</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+        <FooterMenu />
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
