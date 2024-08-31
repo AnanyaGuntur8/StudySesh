@@ -83,7 +83,7 @@ const Sesh = ({ navigation }) => {
             placeholderTextColor="white"
             value={title}
             onChangeText={(text) => setTitle(text)}
-            maxLength={30}  // Set the character limit here
+            maxLength={20}  // Set the character limit here
           />
           <TextInput
             style={[styles.input, styles.textInput, { height: 100 }]}

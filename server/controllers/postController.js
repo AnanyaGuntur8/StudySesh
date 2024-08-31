@@ -1,5 +1,6 @@
 const postModel = require("../models/postModel")
 const userModel = require("../models/userModel")
+const mongoose = require('mongoose');
 
 //creating the post
 const createPostController = async (req, res) => {
@@ -176,45 +177,55 @@ const updatePostController = async (req, res) => {
         });
     }
 };
+
 const joinPostController = async (req, res) => {
     try {
-        const postId = req.params.id;
-        const username = req.body.username;
-        
+        const postId = req.params.id; // Extract postId from URL parameters
+        const username = req.params.username; // Extract username from URL parameters
+
         if (!username) {
             return res.status(400).json({ message: 'Username is required' });
         }
-        
-        // Find the post
-        const post = await postModel.findById(postId);
+
+        // Ensure the function is async and use await for promises
+        const [post, user] = await Promise.all([
+            postModel.findById(postId),
+            userModel.findOne({ username })
+        ]);
+
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
         }
-    
-        // Find the user by username
-        const user = await userModel.findOne({ username: username });
+
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        
-        // Check if the post is already followed by the user
-        if (post.followedBy.includes(username)) {
+
+        // Initialize followedBy and followedPosts arrays if they are undefined
+        post.followedBy = post.followedBy || [];
+        user.followedPosts = user.followedPosts || [];
+
+        // Convert ObjectIds to strings for comparison
+        const userIdStr = user._id.toString();
+        const postIdStr = post._id.toString();
+
+        if (post.followedBy.map(id => id.toString()).includes(userIdStr)) {
             return res.status(400).json({ message: 'Already following this post' });
         }
-        
-        // Check if the user already followed this post
-        if (user.followedPosts.includes(postId)) {
-            return res.status(400).json({ message: 'User already followed this post' });
-        }
-        
-        // Update the user's followedPosts and the post's followedBy
-        user.followedPosts.push(postId);
-        post.followedBy.push(username);
-        
-        await user.save();
-        await post.save();
-        
-        res.status(200).json({ message: 'Followed post successfully' });
+
+        // if (user.followedPosts.map(id => id.toString()).includes(postIdStr)) {
+        //     return res.status(400).json({ message: 'User already followed this post' });
+        // }
+
+        post.followedBy.push(user._id);
+        user.followedPosts.push(post._id);
+
+        await Promise.all([
+            post.save(),
+            user.save()
+        ]);
+
+        res.status(200).json({ message: 'Successfully followed the post' });
     } catch (error) {
         console.error('Error following post:', error);
         res.status(500).json({ message: 'Server error' });
@@ -222,11 +233,11 @@ const joinPostController = async (req, res) => {
 };
 const unfollowPostController = async (req, res) => {
     try {
-        const postId = req.params.id;  // Extract postId from URL parameters
-        const username = req.body.username;  // Extract username from request body
-        
-        if (!username) {
-            return res.status(400).json({ message: 'Username is required' });
+        const { id: postId, username } = req.params;  // Extract post ID and username from URL parameters
+
+        // Validate the post ID
+        if (!mongoose.Types.ObjectId.isValid(postId)) {
+            return res.status(400).json({ message: 'Invalid post ID' });
         }
 
         // Find the post
@@ -241,45 +252,59 @@ const unfollowPostController = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Check if user is following the post
-        const isFollowing = post.followedBy.includes(username);
-        if (!isFollowing) {
-            return res.status(400).json({ message: 'Not following this post' });
-        }
+        // Initialize followedBy and followedPosts arrays if they are undefined
+        post.followedBy = post.followedBy || [];
+        user.followedPosts = user.followedPosts || [];
+
+        // Check if the user is following the post
+        const isFollowing = post.followedBy.includes(user._id.toString());
+        // if (!isFollowing) {
+        //     return res.status(400).json({ message: 'User is not following this post' });
+        // }
 
         // Unfollow the post
-        post.followedBy = post.followedBy.filter(name => name !== username);
+        post.followedBy = post.followedBy.filter(id => id.toString() !== user._id.toString());
         user.followedPosts = user.followedPosts.filter(id => id.toString() !== postId);
 
-        // Save the changes
-        await post.save();
-        await user.save();
+        await Promise.all([post.save(), user.save()]);  // Save changes concurrently
 
-        console.log('Successfully unfollowed post:', { postId, username });
-
-        res.status(200).json({ message: 'Unfollowed post successfully' });
+        return res.status(200).json({ message: 'Unfollowed post successfully' });
     } catch (error) {
-        console.error('Error processing request:', error.message);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Error processing unfollow request:', error.message);
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+
+
 const getPostsFollowedByUserController = async (req, res) => {
     try {
-        // Use query parameter for testing
-        const username = req.query.username;
-
-        if (!username) {
-            return res.status(400).json({ message: 'Username is required' });
+        // Use query parameter for testing or retrieve from authenticated context
+        const userId = req.query.userId || req.auth._id;
+        
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is required' });
         }
 
-        console.log('Username received:', username);
+        console.log('User ID received:', userId);
 
-        // Find posts followed by the user and populate the postedBy field with the user's information
+        // Find the user by userId
+        const user = await userModel.findById(userId).select('followedPosts');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // If user has no followed posts
+        if (user.followedPosts.length === 0) {
+            return res.status(200).json({ message: 'No posts followed by this user' });
+        }
+
+        // Find the posts followed by the user and populate the postedBy field with the user's information
         const posts = await postModel
-            .find({ followedBy: username })
+            .find({ _id: { $in: user.followedPosts } })
             .populate('postedBy', 'username'); // Populate only the username field of the postedBy user
 
         console.log('Posts found:', posts);
+        res.setHeader('Cache-Control', 'no-store');
 
         res.status(200).json({ posts });
     } catch (error) {
@@ -288,11 +313,13 @@ const getPostsFollowedByUserController = async (req, res) => {
     }
 };
 
+
 module.exports = {createPostController,
      getAllPostsController, 
      getUserPostsController, 
      deletePostController, 
      updatePostController, 
-     joinPostController, 
+ joinPostController
+    , 
      unfollowPostController,
      getPostsFollowedByUserController}

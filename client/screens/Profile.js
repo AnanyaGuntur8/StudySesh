@@ -64,9 +64,9 @@ function Profile() {
             <ScrollView contentContainerStyle={styles.scrollView}>
                 <View style={styles.container}>
                     <View style={styles.profileContainer}>
-                        <TouchableOpacity>
+                        {/* <TouchableOpacity>
                             <Image source={{ uri: profileImage }} style={styles.profileImage} />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                         <View style={styles.headerInfo}>
                             {isEditing ? (
                                 <>
@@ -105,10 +105,10 @@ function Profile() {
                             )}
                         </View>
                     </View>
-                    <View style={styles.statsContainer}>
+                    {/* <View style={styles.statsContainer}>
                         <Text style={styles.statsText}>Following</Text>
                         <Text style={styles.statsText}>Followers</Text>
-                    </View>
+                    </View> */}
 
                     <TouchableOpacity style={styles.editButton} onPress={isEditing ? handleSave : handleEditToggle}>
                         <Text style={styles.editText}>{isEditing ? 'Save' : 'Edit'}</Text>
@@ -118,12 +118,12 @@ function Profile() {
                 <TouchableOpacity style={styles.optionButton}>
                     <Text style={styles.optionText}>Settings</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.optionButton}>
+                {/* <TouchableOpacity style={styles.optionButton}>
                     <Text style={styles.optionText}>Privacy</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.optionButton}>
                     <Text style={styles.optionText}>Activity Summary</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                     <Text style={styles.logoutText}>Log Out</Text>
                 </TouchableOpacity>
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
         padding: 20,
         borderRadius: 22,
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 290,
     },
     optionText: {
         color: 'white',

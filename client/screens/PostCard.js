@@ -3,50 +3,54 @@ import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Ale
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import axios from 'axios';
 import { AuthContext } from '../context/authContext';
 import { PostContext } from '../context/postContext';
 import EditModal from '../components/EditModal';
+import axios from 'axios';
 
 const PostCard = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false); 
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [color, setColor] = useState('#FFFFFF');
   const [isFollowing, setIsFollowing] = useState(false);
-  const [state] = useContext(AuthContext);
+  const [currentPost, setCurrentPost] = useState(route.params.post);
+
   const [posts, setPosts, followPost, unfollowPost] = useContext(PostContext);
-  const { token, user } = state; // Ensure you have user info from context
+  const [state] = useContext(AuthContext);
+  const { token, user } = state;
   const navigation = useNavigation();
+  const { isMyGroup } = route.params;
 
-  const { post, isMyGroup } = route.params;
-
-  // Check if post exists
+  // Check if the post exists
   useEffect(() => {
-    if (!post) {
+    if (!currentPost) {
       Alert.alert("Error", "Post not found");
       navigation.goBack();
     }
-  }, [post, navigation]);
+  }, [currentPost, navigation]);
 
-  // Update color and follow status when the post or user changes
+  // Update state on focus
   useFocusEffect(
     useCallback(() => {
-      if (post) {
-        const currentPost = posts.find(p => p._id === post._id);
-        if (currentPost) {
-          setColor(currentPost.color || '#FFFFFF');
-          setIsFollowing(currentPost.followedBy.includes(user?.username));
+      if (currentPost) {
+        const updatedPost = posts.find(p => p._id === currentPost._id);
+        if (updatedPost) {
+          setCurrentPost(updatedPost);
+          setColor(updatedPost.color || '#FFFFFF');
+          const followedBy = updatedPost.followedBy || [];
+          const userIdStr = user?._id?.toString();
+          setIsFollowing(followedBy.some(id => id.toString() === userIdStr));
         }
       }
-    }, [post, posts, user?.username])
+    }, [currentPost, posts, user?._id])
   );
 
+  // Function to handle notes press
   const handleNotesPress = () => {
-    const isMaker = post?.postedBy?.username === user?.username;
-    
+    const isMaker = currentPost?.postedBy?.username === user?.username;
     if (isMaker || isFollowing) {
-      const driveLink = post?.link;
+      const driveLink = currentPost?.link;
       if (driveLink) {
         Linking.openURL(driveLink)
           .catch((err) => console.error("An error occurred while opening the link", err));
@@ -58,20 +62,22 @@ const PostCard = ({ route }) => {
     }
   };
 
+  // Function to handle community press
   const handleCommunityPress = () => {
-    const isMaker = post?.postedBy?.username === user?.username;
-
+    const isMaker = currentPost?.postedBy?.username === user?.username;
     if (isMaker || isFollowing) {
-      navigation.navigate("Community", { post, color });
+      navigation.navigate("Community", { post: currentPost, color });
     } else {
       Alert.alert("Join the session to access the community");
     }
   };
 
+  // Function to toggle modal visibility
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
 
+  // Function to delete post
   const handleDeletePost = async (id) => {
     try {
       setLoading(true);
@@ -90,6 +96,7 @@ const PostCard = ({ route }) => {
     }
   };
 
+  // Function to follow post
   const handleFollowPost = async () => {
     if (!user?.username) {
       Alert.alert("Error", "Username is required");
@@ -97,14 +104,14 @@ const PostCard = ({ route }) => {
     }
     
     try {
-      await followPost(post._id, user.username);
-      setIsFollowing(true); // Immediately update state
-      Alert.alert('Post followed successfully');
+      await followPost(currentPost._id);
+      setIsFollowing(true); // Update state to indicate the post is followed
     } catch (error) {
-      Alert.alert('Error', error.response ? error.response.data.message : error.message);
+      Alert.alert('Error', error.message);
     }
   };
 
+  // Function to unfollow post
   const handleUnfollowPost = async () => {
     if (!user?.username) {
       Alert.alert("Error", "Username is required");
@@ -112,12 +119,18 @@ const PostCard = ({ route }) => {
     }
 
     try {
-      await unfollowPost(post._id, user.username);
-      setIsFollowing(false); // Immediately update state
-      Alert.alert('Post unfollowed successfully');
+      await unfollowPost(currentPost._id);
+      setIsFollowing(false); // Update state to indicate the post is unfollowed
     } catch (error) {
-      Alert.alert('Error', error.response ? error.response.data.message : error.message);
+      Alert.alert('Error', error.message);
     }
+  };
+
+  // Callback function to update post details after editing
+  const handlePostUpdate = (updatedPost) => {
+    setCurrentPost(updatedPost);
+    const updatedPosts = posts.map(p => p._id === updatedPost._id ? updatedPost : p);
+    setPosts(updatedPosts); // Update the global post context with the new data
   };
 
   return (
@@ -128,22 +141,22 @@ const PostCard = ({ route }) => {
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Entypo name='chevron-with-circle-left' style={styles.iconStyle} />
             </TouchableOpacity>
-            <Text style={styles.title}>{post?.title}</Text>
+            <Text style={styles.title}>{currentPost?.title}</Text>
             {isMyGroup && (
-              <TouchableOpacity onPress={toggleModal} style={styles.dotsContainer}>
+              <TouchableOpacity onPress={toggleModal} style={styles.iconContainer}>
                 <Entypo name='dots-three-vertical' style={styles.iconStyle2} />
               </TouchableOpacity>
             )}
           </View>
 
           <Text style={styles.contentDescription}>Description</Text>
-          <Text style={styles.description}>{post?.description}</Text>
+          <Text style={styles.description}>{currentPost?.description}</Text>
 
           <View style={styles.usernameAndJoinContainer}>
             <TouchableOpacity>
-              <Text style={styles.username}>@{post?.postedBy?.username}</Text>
+              <Text style={styles.username}>@{currentPost?.postedBy?.username}</Text>
             </TouchableOpacity>
-            {post?.postedBy?.username !== user?.username && (
+            {currentPost?.postedBy?.username !== user?.username && !isMyGroup && (
               <TouchableOpacity 
                 style={styles.joinGroup}
                 onPress={isFollowing ? handleUnfollowPost : handleFollowPost}
@@ -156,7 +169,7 @@ const PostCard = ({ route }) => {
           </View>
 
           <Text style={styles.contentDescription}>Introduction</Text>
-          <Text style={styles.update}>{post?.update}</Text>
+          <Text style={styles.update}>{currentPost?.update}</Text>
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.notes} onPress={handleNotesPress}>
@@ -189,7 +202,7 @@ const PostCard = ({ route }) => {
                     "Are you sure you want to delete this post?",
                     [
                       { text: "Cancel", style: "cancel" },
-                      { text: "Delete", onPress: () => handleDeletePost(post._id) },
+                      { text: "Delete", onPress: () => handleDeletePost(currentPost._id) },
                     ]
                   );
                 }}>
@@ -203,7 +216,8 @@ const PostCard = ({ route }) => {
             <EditModal 
               visible={isEditModalVisible} 
               onClose={() => setIsEditModalVisible(false)} 
-              post={post} 
+              post={currentPost}
+              onPostUpdate={handlePostUpdate} // Pass the update function to the EditModal
             />
           )}
         </View>
@@ -211,7 +225,6 @@ const PostCard = ({ route }) => {
     </SafeAreaView>
   );
 };
-
 
 const styles = StyleSheet.create({
   safearea: {
@@ -223,68 +236,57 @@ const styles = StyleSheet.create({
   },
   titleAndIcon: {
     flexDirection: 'row',
-    alignItems: 'center',  
+    alignItems: 'center',
     marginBottom: 50,
+    position: 'relative', // Allow child elements to be positioned absolutely
   },
   iconStyle: {
-    fontSize: 40,
+    fontSize: 30,
+    color: 'black',
     marginRight: 10,
   },
   iconStyle2: {
     fontSize: 30,
     color: 'black',
   },
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    flexShrink: 1,
-    maxWidth: '80%',
-  },
-  dotsContainer: {
+  iconContainer: {
     position: 'absolute',
     right: 0,
     top: 0,
-    padding: 10,
+    bottom: 0,
+    justifyContent: 'center',
+    paddingLeft: 10,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    flexShrink: 1, // Allow title to shrink and wrap
+  },
+  contentDescription: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 16,
+    marginBottom: 30,
   },
   usernameAndJoinContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 30,
+    marginBottom: 30,
   },
   username: {
     fontSize: 16,
     fontWeight: 'bold',
-    flex: 1,
-  },
-  description: {
-    borderRadius: 30,
-    fontSize: 16,
-    paddingBottom: 10,
-  },
-  contentDescription: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    borderWidth: 2,
-    borderRadius: 15,
-    height: 40,
-    width: 120,
-    padding: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    textAlign: 'center',
-    marginVertical: 10,
+    color: 'black',
   },
   joinGroup: {
     paddingVertical: 10,
-    paddingHorizontal: 1,
-    width: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-    textAlign: 'center',
+    paddingHorizontal: 15,
     backgroundColor: 'black',
     borderRadius: 30,
-    marginLeft: 10,
+    marginLeft: 'auto',
   },
   joinButtonText: {
     color: 'white',
@@ -292,7 +294,7 @@ const styles = StyleSheet.create({
   },
   update: {
     fontSize: 16,
-    paddingBottom: 30,
+    marginBottom: 30,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -304,54 +306,35 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     height: 150,
     width: 150,
-    padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    textAlign: 'center',
-    marginVertical: 10,
   },
   notesText: {
-    fontSize: 16,
     color: 'black',
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
     padding: 20,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    borderRadius: 50,
+    borderRadius: 10,
+    width: '80%',
   },
   modalText: {
-    borderWidth: 2,
-    borderColor: 'black',
-    borderRadius: 20,
     fontSize: 18,
     paddingVertical: 10,
-    paddingHorizontal: 20,
-    color: 'black',
-    textAlign: 'left',
-    width: '100%',
-    marginBottom: 20,
   },
   modalText2: {
-    borderWidth: 2,
-    borderColor: 'black',
-    borderRadius: 20,
     fontSize: 18,
     paddingVertical: 10,
-    paddingHorizontal: 20,
-    color: 'black',
-    textAlign: 'left',
-    width: '100%',
-    marginTop: 10,
-    marginBottom: 50,
+    color: 'red',
   },
 });
 

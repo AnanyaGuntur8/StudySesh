@@ -1,10 +1,10 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet, KeyboardAvoidingView , Platform} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import axios from 'axios';
 import { AuthContext } from '../context/authContext';
 import { getSocket } from '../components/utils/socket'; // Adjust the path to your socket file
 import Entypo from 'react-native-vector-icons/Entypo';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 const Community = ({ route }) => {
     const [loading, setLoading] = useState(true);
@@ -12,7 +12,6 @@ const Community = ({ route }) => {
     const [newMessage, setNewMessage] = useState('');
     const [state] = useContext(AuthContext);
     const { token, user } = state;
-    const { username } = user;
     const { post } = route.params;
     const navigation = useNavigation();
 
@@ -22,15 +21,15 @@ const Community = ({ route }) => {
     useEffect(() => {
         const fetchMessages = async () => {
             try {
-                const response = await axios.get(`/chat/${postId}/messages`, {
+                const { data } = await axios.get(`/chat/${postId}/messages`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                setMessages(response.data.messages);
+                setMessages(data.messages);
             } catch (error) {
-                console.log('Error fetching messages:', error);
-                Alert.alert('Error', error.response ? error.response.data.message : error.message);
+                console.error('Error fetching messages:', error);
+                Alert.alert('Error', error.response?.data?.message || error.message);
             } finally {
                 setLoading(false);
             }
@@ -38,19 +37,12 @@ const Community = ({ route }) => {
 
         fetchMessages();
 
-        // Get the socket instance
         const socket = getSocket();
-
-        // Join the specific room for this post
         socket.emit('joinRoom', postId);
 
-        // Listen for new messagessl
         const handleReceiveMessage = (message) => {
-            if (message.post == postId){
-            setMessages(prevMessages => [message, ...prevMessages]);
-            }
-            else{
-                message.postId = postId
+            if (message.post === postId) {
+                setMessages((prevMessages) => [message, ...prevMessages]);
             }
         };
 
@@ -75,20 +67,19 @@ const Community = ({ route }) => {
                 postId: postId,
             };
 
-            const response = await axios.post(`/chat/${postId}/messages`, messageData, {
+            const { data } = await axios.post(`/chat/${postId}/messages`, messageData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
 
-            const socket = getSocket(); // Get the socket instance to emit the message
-            socket.emit('sendMessage', response.data.chatMessage);
+            const socket = getSocket();
+            socket.emit('sendMessage', data.chatMessage);
 
-            // Move the message addition to the socket listener
             setNewMessage('');
         } catch (error) {
-            console.error('Error sending message:', error.response?.data || error.message);
-            Alert.alert('Error', error.response ? error.response.data.message : error.message);
+            console.error('Error sending message:', error.response?.data?.message || error.message);
+            Alert.alert('Error', error.response?.data?.message || error.message);
         }
     };
 
@@ -96,22 +87,17 @@ const Community = ({ route }) => {
         <KeyboardAvoidingView
             style={[styles.container, { backgroundColor: postColor }]}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={1} 
+            keyboardVerticalOffset={1}
         >
-            <View style={[styles.container, { backgroundColor: postColor }]}>
+            <View style={styles.container}>
                 <View style={[styles.borderContainer, { backgroundColor: postColor }]}>
                     <View style={styles.titleAndIcon}>
-                    {/* add the back arrow */}
                         <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Entypo name='chevron-with-circle-left' style={styles.iconStyle} />
+                            <Entypo name="chevron-with-circle-left" style={styles.iconStyle} />
                         </TouchableOpacity>
-                    
-                    {/* add the back arrow */}
-                    <Text style={styles.title}>Community</Text>
+                        <Text style={styles.title}>Community</Text>
                     </View>
                     <Text style={styles.subtitle}>{post.title}</Text>
-                
-                
                 </View>
                 {loading ? (
                     <Text>Loading messages...</Text>
@@ -119,9 +105,9 @@ const Community = ({ route }) => {
                     <FlatList
                         data={messages}
                         inverted
-                        keyExtractor={(item) => item.id ? item.id : Math.random().toString()}
+                        keyExtractor={(item) => item._id || Math.random().toString()}
                         renderItem={({ item }) => (
-                            <View style={[styles.messageContainer, { backgroundColor: postColor }]}>
+                            <View style={styles.messageContainer}>
                                 <Text style={styles.message}>
                                     <Text style={styles.sender}>{item.sender}: </Text>
                                     {item.message}
@@ -138,7 +124,7 @@ const Community = ({ route }) => {
                         value={newMessage}
                         onChangeText={setNewMessage}
                         multiline
-                        numberOfLines={4} 
+                        numberOfLines={4}
                         scrollEnabled
                         textAlignVertical="top"
                     />
@@ -154,8 +140,6 @@ const Community = ({ route }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        // padding: 2,
-        // paddingBottom:20,
     },
     title: {
         paddingTop: 20,
@@ -163,7 +147,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     subtitle: {
-        paddingTop: 1,
         fontSize: 20,
         fontWeight: 'bold',
         color: 'black',
@@ -173,19 +156,17 @@ const styles = StyleSheet.create({
     titleAndIcon: {
         flexDirection: 'row',
         alignItems: 'center',
-        // marginBottom: 10,
         paddingLeft: 20,
-        paddingTop:40,
+        paddingTop: 40,
     },
     iconStyle: {
-        paddingTop:20,
         fontSize: 40,
         marginRight: 10,
     },
     borderContainer: {
         paddingBottom: 10,
-        borderBottomWidth: 2, // Border width
-        borderBottomColor: 'black', // Border color
+        borderBottomWidth: 2,
+        borderBottomColor: 'black',
         width: '100%',
     },
     messageContainer: {
@@ -203,11 +184,8 @@ const styles = StyleSheet.create({
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 10,
-        marginLeft: 15,
-        marginRight: 15,
+        marginHorizontal: 15,
         paddingBottom: 20,
-        
     },
     input: {
         flex: 1,

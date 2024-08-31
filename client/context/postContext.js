@@ -1,13 +1,13 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
-import { AuthContext } from './authContext'; // Ensure this is correctly imported
+import { AuthContext } from './authContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const PostContext = createContext();
 
 export const PostProvider = ({ children }) => {
     const [posts, setPosts] = useState([]);
-    const [state, setState] = useContext(AuthContext); // Access the AuthContext
+    const [state, setState] = useContext(AuthContext);
 
     const fetchPosts = async () => {
         try {
@@ -25,17 +25,17 @@ export const PostProvider = ({ children }) => {
                 throw new Error('Username is required');
             }
 
-            const response = await axios.post(`/post/join-post/${postId}`, {
+            const response = await axios.post(`/post/follow/${postId}/${user.username}`, {
                 username: user.username,
             });
 
             const updatedFollowedPosts = [...user.followedPosts, postId];
-            const followedPost = posts.find(post => post._id === postId);
-            const updatedGroups = [...(state.groups || [])];
-
-            if (followedPost && followedPost.followedBy.includes(user.username)) {
-                updatedGroups.push(followedPost);
-            }
+            const updatedGroups = (state.groups || []).map(group => {
+                if (group._id === postId) {
+                    return { ...group, followedBy: [...(group.followedBy || []), user._id] };
+                }
+                return group;
+            });
 
             setState(prevState => ({
                 ...prevState,
@@ -49,6 +49,9 @@ export const PostProvider = ({ children }) => {
             const updatedUser = { ...user, followedPosts: updatedFollowedPosts };
             const authData = { ...state, user: updatedUser, groups: updatedGroups };
             await AsyncStorage.setItem('@auth', JSON.stringify(authData));
+
+            // Optionally, refetch posts to ensure state is up to date
+            fetchPosts();
 
             alert(response.data.message || 'Followed post successfully');
         } catch (error) {
@@ -63,12 +66,21 @@ export const PostProvider = ({ children }) => {
                 throw new Error('Username is required');
             }
 
-            const response = await axios.delete(`/post/unfollow/${postId}`, {
-                data: { username: user.username }, // Send username in the body of the request
-            });
+            // Check if user.followedPosts is defined
+            if (!user.followedPosts) {
+                throw new Error('Followed posts list is not available');
+            }
 
-            const updatedFollowedPosts = user.followedPosts.filter(id => id !== postId);
-            const updatedGroups = (state.groups || []).filter(group => group._id !== postId);
+            const response = await axios.delete(`/post/unfollow/${postId}/${user.username}`);
+
+            // Ensure followedPosts is defined before filtering
+            const updatedFollowedPosts = user.followedPosts ? user.followedPosts.filter(id => id !== postId) : [];
+            const updatedGroups = (state.groups || []).map(group => {
+                if (group._id === postId) {
+                    return { ...group, followedBy: (group.followedBy || []).filter(id => id.toString() !== user._id.toString()) };
+                }
+                return group;
+            });
 
             setState(prevState => ({
                 ...prevState,
@@ -82,6 +94,9 @@ export const PostProvider = ({ children }) => {
             const updatedUser = { ...user, followedPosts: updatedFollowedPosts };
             const authData = { ...state, user: updatedUser, groups: updatedGroups };
             await AsyncStorage.setItem('@auth', JSON.stringify(authData));
+
+            // Optionally, refetch posts to ensure state is up to date
+            fetchPosts();
 
             alert(response.data.message || 'Unfollowed post successfully');
         } catch (error) {

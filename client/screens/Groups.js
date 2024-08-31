@@ -12,43 +12,24 @@ const Groups = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('groups');
   const [state] = useContext(AuthContext);
-  const [, , followPost, unfollowPost] = useContext(PostContext); // Destructure followPost and unfollowPost
+  const [, , followPost, unfollowPost] = useContext(PostContext);
   const { token, user } = state;
   const navigation = useNavigation();
 
-  const getUserPosts = async () => {
+  const fetchPosts = async (url, params) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const { data } = await axios.get('/post/get-user-posts', {
+      const { data } = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params,
       });
-      setPosts(data?.allPosts || []);
-      setMyPosts(data?.userPosts || []);
+      return data.posts || data.userPosts || [];
     } catch (error) {
       console.error('Failed to load posts:', error);
       Alert.alert('Error', 'Failed to load posts. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getFollowedPosts = async () => {
-    try {
-      setLoading(true);
-      const { data } = await axios.get(`/post/posts-followed-by-user?username=${user.username}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const filteredPosts = data?.posts.filter(post =>
-        user.followedPosts.includes(post._id)
-      ) || [];
-      setPosts(filteredPosts);
-    } catch (error) {
-      console.error('Failed to load followed posts:', error);
-      Alert.alert('Error', 'Failed to load followed posts. Please try again later.');
+      return [];
     } finally {
       setLoading(false);
     }
@@ -56,13 +37,12 @@ const Groups = () => {
 
   useEffect(() => {
     if (activeTab === 'groups') {
-      getFollowedPosts();
+      fetchPosts('/post/posts-followed-by-user', { userId: user._id }).then(setPosts);
     } else {
-      getUserPosts();
+      fetchPosts('/post/get-user-posts').then(setMyPosts);
     }
-  }, [activeTab, user.followedPosts]); 
+  }, [activeTab, user._id]);
 
-  // Group items into rows of two
   const groupItems = (items) => {
     const grouped = [];
     for (let i = 0; i < items.length; i += 2) {
@@ -71,31 +51,26 @@ const Groups = () => {
     return grouped;
   };
 
-  // following post action
   const handleFollowPost = async (postId) => {
     try {
-      await followPost(postId);
-      Alert.alert('Success', 'Post followed successfully.');
+        await followPost(postId);
+        Alert.alert('Success', 'Post followed successfully.');
     } catch (error) {
-      console.error('Failed to follow post:', error);
-      Alert.alert('Error', 'Failed to follow post. Please try again later.');
+        console.error('Failed to follow post:', error);
+        Alert.alert('Error', 'Failed to follow post. Please try again later.');
     }
-  };
+};
 
-  // Handle unfollowing action
-  const handleUnfollowPost = async (postId) => {
+const handleUnfollowPost = async (postId) => {
     try {
-      await unfollowPost(postId);
-      // Remove the unfollowed post from the posts state
-      setPosts(posts.filter(post => post._id !== postId));
-      Alert.alert('Success', 'Post unfollowed successfully.');
+        await unfollowPost(postId);
+        setPosts((prevPosts) => prevPosts.filter(post => post._id !== postId));
+        Alert.alert('Success', 'Post unfollowed successfully.');
     } catch (error) {
-      console.error('Failed to unfollow post:', error);
-      Alert.alert('Error', 'Failed to unfollow post. Please try again later.');
+        console.error('Failed to unfollow post:', error);
+        Alert.alert('Error', 'Failed to unfollow post. Please try again later.');
     }
-  };
-
-  // filtering posts for display
+};
   const displayPosts = activeTab === 'groups' ? posts : myPosts;
   const groupedPosts = groupItems(displayPosts);
 
@@ -134,6 +109,21 @@ const Groups = () => {
                     >
                       <Text style={styles.postText}>{post.title}</Text>
                       <Text style={styles.username}>@{post.postedBy?.username}</Text>
+                      <TouchableOpacity 
+                        style={styles.followButton}
+                        onPress={() => {
+                          const isFollowing = user.followedPosts.includes(post._id);
+                          if (isFollowing) {
+                            handleUnfollowPost(post._id);
+                          } else {
+                            handleFollowPost(post._id);
+                          }
+                        }}
+                      >
+                        {/* <Text style={styles.followButtonText}>
+                          {user.followedPosts.includes(post._id) ? 'Unjoin Sesh' : 'Join Sesh'}
+                        </Text> */}
+                      </TouchableOpacity>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -211,6 +201,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginTop: 20,
   },
+  // followButton: {
+  //   marginTop: 10,
+  //   padding: 5,
+  //   backgroundColor: '#00CFFF',
+  //   borderRadius: 5,
+  // },
+  // followButtonText: {
+  //   color: '#FFFFFF',
+  //   fontSize: 14,
+  // },
 });
 
 export default Groups;

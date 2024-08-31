@@ -4,16 +4,15 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-// Provider
 const AuthProvider = ({ children }) => {
     const [state, setState] = useState({
-        user: { username: '', followedPosts: [] },
+        user: { _id: '', username: '', followedPosts: [] },
         token: '',
+        groups: [],
     });
 
     axios.defaults.baseURL = 'http://192.168.1.105:8080/api/v1';
 
-    // Load local storage data on initialization
     useEffect(() => {
         const loadLocalStorageData = async () => {
             try {
@@ -21,15 +20,17 @@ const AuthProvider = ({ children }) => {
                 const loginData = JSON.parse(data);
 
                 if (loginData) {
-                    console.log('Local Storage =>', loginData); 
+                    console.log('Local Storage =>', loginData);
                     setState(prevState => ({
                         ...prevState,
                         user: {
                             ...prevState.user,
                             ...loginData.user,
+                            _id: loginData.user?._id,
                             followedPosts: loginData.user?.followedPosts || []
                         },
-                        token: loginData.token || ''
+                        token: loginData.token || '',
+                        groups: loginData.groups || []
                     }));
                 }
             } catch (error) {
@@ -40,18 +41,16 @@ const AuthProvider = ({ children }) => {
         loadLocalStorageData();
     }, []);
 
-    // Fetch followed posts
     const fetchFollowedPosts = async () => {
         try {
-            const encodedUsername = encodeURIComponent(state.user.username);
-            const response = await axios.get(`post/posts-followed-by-user?username=${encodedUsername}`, {
+            const userId = state.user._id;
+            const response = await axios.get(`post/posts-followed-by-user?userId=${userId}`, {
                 headers: { Authorization: `Bearer ${state.token}` }
             });
-    
+
             if (response.data.success) {
                 const followedPosts = response.data.posts ? response.data.posts.map(post => post._id) : [];
                 
-                // Update state with the new list of followed posts
                 setState(prevState => ({
                     ...prevState,
                     user: {
@@ -59,8 +58,7 @@ const AuthProvider = ({ children }) => {
                         followedPosts
                     }
                 }));
-    
-                // Update AsyncStorage with the new list of followed posts
+
                 await AsyncStorage.setItem('@auth', JSON.stringify({
                     ...state,
                     user: {
@@ -68,9 +66,7 @@ const AuthProvider = ({ children }) => {
                         followedPosts
                     }
                 }));
-            // } else {
-            //     console.error('Failed to fetch followed posts:', response.data.message);
-             }
+            }
         } catch (error) {
             console.error('Error fetching followed posts:', error);
         }
