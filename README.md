@@ -14,10 +14,3 @@ This project excludes the node modules so to install this project and run the cu
 2. run "npm -i"
 3. run ng serve
 
-Current 
-
-![IMG_6550](https://github.com/user-attachments/assets/287a3c8a-a0a0-4827-8a13-f25589d32afd)
-![IMG_6547](https://github.com/user-attachments/assets/eeb5537d-6314-46d2-9910-748eec5fb74d)
-![IMG_6526](https://github.com/user-attachments/assets/6ef43d7d-eaa1-40e6-8faa-c6bab79cbf56)
-![Simulator Screenshot - iPhone 14 Pro - 2024-08-03 at 17 11 13](https://github.com/user-attachments/assets/6eb990f1-8f36-464f-92a7-b216b6d7c997)
-![Simulator Screenshot - iPhone 14 Pro - 2024-08-03 at 17 11 49](https://github.com/user-attachments/assets/2107d370-8772-4856-8f79-f46c6f2270ce)
