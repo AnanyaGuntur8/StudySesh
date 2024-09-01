@@ -177,7 +177,27 @@ const updatePostController = async (req, res) => {
         });
     }
 };
+// const updateUserPostController = async (req, res) => {
+//     try {
+//         const { oldUsername, newUsername } = req.body;
+        
+//         // Update the username in posts
+//         const result = await postModel.updateMany(
+//             { 'postedBy.username': oldUsername },
+//             { $set: { 'postedBy.username': newUsername } }
+//         );
 
+//         // Optionally, update the username in the User model if needed
+//         await userModel.updateOne({ username: oldUsername }, { $set: { username: newUsername } });
+
+//         res.json({
+//             success: true,
+//             result
+//         });
+//     } catch (error) {
+//         res.status(500).json({ success: false, message: error.message });
+//     }
+// };
 const joinPostController = async (req, res) => {
     try {
         const postId = req.params.id; // Extract postId from URL parameters
@@ -319,6 +339,7 @@ module.exports = {createPostController,
      getUserPostsController, 
      deletePostController, 
      updatePostController, 
+     
  joinPostController
     , 
      unfollowPostController,

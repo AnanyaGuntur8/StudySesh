@@ -34,8 +34,10 @@ const PostCard = ({ route }) => {
   useFocusEffect(
     useCallback(() => {
       if (currentPost) {
+        console.log("Current Post ID:", currentPost._id);
         const updatedPost = posts.find(p => p._id === currentPost._id);
         if (updatedPost) {
+          console.log("Updated Post:", updatedPost);
           setCurrentPost(updatedPost);
           setColor(updatedPost.color || '#FFFFFF');
           const followedBy = updatedPost.followedBy || [];
@@ -45,6 +47,20 @@ const PostCard = ({ route }) => {
       }
     }, [currentPost, posts, user?._id])
   );
+
+  // Update state on posts change
+  useEffect(() => {
+    if (currentPost) {
+      const updatedPost = posts.find(p => p._id === currentPost._id);
+      if (updatedPost) {
+        setCurrentPost(updatedPost);
+        setColor(updatedPost.color || '#FFFFFF');
+        const followedBy = updatedPost.followedBy || [];
+        const userIdStr = user?._id?.toString();
+        setIsFollowing(followedBy.some(id => id.toString() === userIdStr));
+      }
+    }
+  }, [posts, currentPost, user?._id]);
 
   // Function to handle notes press
   const handleNotesPress = () => {

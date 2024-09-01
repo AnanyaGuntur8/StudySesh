@@ -6,7 +6,7 @@ const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
     const [state, setState] = useState({
-        user: { _id: '', username: '', followedPosts: [] },
+        user: { _id: '', username: '', name: '', email: '', followedPosts: [] },
         token: '',
         groups: [],
     });
@@ -19,15 +19,13 @@ const AuthProvider = ({ children }) => {
                 const data = await AsyncStorage.getItem('@auth');
                 const loginData = JSON.parse(data);
 
-                if (loginData) {
+                if (loginData && loginData.user) {  // Check if loginData and user exist
                     console.log('Local Storage =>', loginData);
                     setState(prevState => ({
                         ...prevState,
                         user: {
                             ...prevState.user,
                             ...loginData.user,
-                            _id: loginData.user?._id,
-                            followedPosts: loginData.user?.followedPosts || []
                         },
                         token: loginData.token || '',
                         groups: loginData.groups || []
@@ -41,9 +39,25 @@ const AuthProvider = ({ children }) => {
         loadLocalStorageData();
     }, []);
 
+    useEffect(() => {
+        const saveToLocalStorage = async () => {
+            try {
+                if (state.user && state.user._id) {  // Ensure state.user is defined before saving
+                    await AsyncStorage.setItem('@auth', JSON.stringify(state));
+                }
+            } catch (error) {
+                console.error('Error saving state to local storage:', error);
+            }
+        };
+
+        saveToLocalStorage();
+    }, [state]);
+
     const fetchFollowedPosts = async () => {
         try {
-            const userId = state.user._id;
+            const userId = state.user?._id;  // Optional chaining to prevent errors
+            if (!userId) return;  // Ensure userId exists before making the request
+
             const response = await axios.get(`post/posts-followed-by-user?userId=${userId}`, {
                 headers: { Authorization: `Bearer ${state.token}` }
             });
@@ -55,14 +69,6 @@ const AuthProvider = ({ children }) => {
                     ...prevState,
                     user: {
                         ...prevState.user,
-                        followedPosts
-                    }
-                }));
-
-                await AsyncStorage.setItem('@auth', JSON.stringify({
-                    ...state,
-                    user: {
-                        ...state.user,
                         followedPosts
                     }
                 }));
@@ -78,8 +84,22 @@ const AuthProvider = ({ children }) => {
         }
     }, [state.token]);
 
+    const logout = async () => {
+        try {
+            await AsyncStorage.removeItem('@auth');  // Remove data from local storage
+            setState({
+                user: { _id: '', username: '', name: '', email: '', followedPosts: [] },
+                token: '',
+                groups: [],
+            });
+            console.log('Logged out successfully');
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={[state, setState]}>
+        <AuthContext.Provider value={[state, setState, logout]}>
             {children}
         </AuthContext.Provider>
     );

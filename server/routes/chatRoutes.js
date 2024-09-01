@@ -4,10 +4,8 @@ const { postMessageController, getMessagesController } = require('../controllers
 const router = express.Router();
 
 module.exports = (io) => {
-    // Route to get messages for a specific post
     router.get('/:postId/messages', requireSignin, getMessagesController);
 
-    // Route to post a new message for a specific post
     router.post('/:postId/messages', requireSignin, (req, res) => postMessageController(req, res, io));
 
     return router;

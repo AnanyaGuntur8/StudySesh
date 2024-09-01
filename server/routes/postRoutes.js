@@ -8,7 +8,8 @@ const {
   updatePostController,
   unfollowPostController,
   getPostsFollowedByUserController,
-  joinPostController
+  joinPostController,
+  updateUserPostController
 } = require('../controllers/postController');
 const router = express.Router();
 router.post('/create-post', requireSignin, createPostController);
@@ -16,6 +17,7 @@ router.get('/get-all-posts', getAllPostsController);
 router.get('/get-user-posts', requireSignin, getUserPostsController);
 router.delete('/delete-post/:id', requireSignin, deletePostController);
 router.put('/update-post/:id', requireSignin, updatePostController);
+// router.put('/post/update-username', requireSignin,updateUserPostController)
 router.post('/follow/:id/:username', joinPostController);
 //unfollowing routes
 router.delete('/unfollow/:id/:username', unfollowPostController);

@@ -12,7 +12,11 @@ export const PostProvider = ({ children }) => {
     const fetchPosts = async () => {
         try {
             const { data } = await axios.get('/post/get-all-posts');
-            setPosts(data?.posts || []);
+            if (data?.posts) {
+                setPosts(data.posts);
+            } else {
+                console.warn('No posts found');
+            }
         } catch (error) {
             console.error('Error fetching posts:', error);
         }
@@ -50,8 +54,7 @@ export const PostProvider = ({ children }) => {
             const authData = { ...state, user: updatedUser, groups: updatedGroups };
             await AsyncStorage.setItem('@auth', JSON.stringify(authData));
 
-            // Optionally, refetch posts to ensure state is up to date
-            fetchPosts();
+            await fetchPosts();  // Refetch to ensure posts are updated
 
             alert(response.data.message || 'Followed post successfully');
         } catch (error) {
@@ -66,15 +69,13 @@ export const PostProvider = ({ children }) => {
                 throw new Error('Username is required');
             }
 
-            // Check if user.followedPosts is defined
             if (!user.followedPosts) {
                 throw new Error('Followed posts list is not available');
             }
 
             const response = await axios.delete(`/post/unfollow/${postId}/${user.username}`);
 
-            // Ensure followedPosts is defined before filtering
-            const updatedFollowedPosts = user.followedPosts ? user.followedPosts.filter(id => id !== postId) : [];
+            const updatedFollowedPosts = user.followedPosts.filter(id => id !== postId);
             const updatedGroups = (state.groups || []).map(group => {
                 if (group._id === postId) {
                     return { ...group, followedBy: (group.followedBy || []).filter(id => id.toString() !== user._id.toString()) };
@@ -95,8 +96,7 @@ export const PostProvider = ({ children }) => {
             const authData = { ...state, user: updatedUser, groups: updatedGroups };
             await AsyncStorage.setItem('@auth', JSON.stringify(authData));
 
-            // Optionally, refetch posts to ensure state is up to date
-            fetchPosts();
+            await fetchPosts();  // Refetch to ensure posts are updated
 
             alert(response.data.message || 'Unfollowed post successfully');
         } catch (error) {
@@ -105,6 +105,7 @@ export const PostProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        // console.log('Fetching posts...');
         fetchPosts();
     }, []);
 
