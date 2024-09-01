@@ -25,31 +25,13 @@ const PostCard = ({ route }) => {
   // Check if the post exists
   useEffect(() => {
     if (!currentPost) {
-      Alert.alert("Error", "Post not found");
+      // Alert.alert("Error", "Post not found");
       navigation.goBack();
     }
   }, [currentPost, navigation]);
 
-  // Update state on focus
-  useFocusEffect(
-    useCallback(() => {
-      if (currentPost) {
-        console.log("Current Post ID:", currentPost._id);
-        const updatedPost = posts.find(p => p._id === currentPost._id);
-        if (updatedPost) {
-          console.log("Updated Post:", updatedPost);
-          setCurrentPost(updatedPost);
-          setColor(updatedPost.color || '#FFFFFF');
-          const followedBy = updatedPost.followedBy || [];
-          const userIdStr = user?._id?.toString();
-          setIsFollowing(followedBy.some(id => id.toString() === userIdStr));
-        }
-      }
-    }, [currentPost, posts, user?._id])
-  );
-
-  // Update state on posts change
-  useEffect(() => {
+  // Update post on focus and posts change
+  const updatePost = useCallback(() => {
     if (currentPost) {
       const updatedPost = posts.find(p => p._id === currentPost._id);
       if (updatedPost) {
@@ -60,7 +42,13 @@ const PostCard = ({ route }) => {
         setIsFollowing(followedBy.some(id => id.toString() === userIdStr));
       }
     }
-  }, [posts, currentPost, user?._id]);
+  }, [currentPost, posts, user?._id]);
+
+  useFocusEffect(updatePost);
+
+  useEffect(() => {
+    updatePost();
+  }, [posts, currentPost, user?._id, updatePost]);
 
   // Function to handle notes press
   const handleNotesPress = () => {
@@ -105,7 +93,7 @@ const PostCard = ({ route }) => {
       setLoading(false);
       navigation.navigate("Home");
       Alert.alert('Post deleted successfully');
-      setPosts((prevPosts) => prevPosts.filter((p) => p._id !== id));
+      setPosts(prevPosts => prevPosts.filter(p => p._id !== id));
     } catch (error) {
       setLoading(false);
       Alert.alert('Error', error.response ? error.response.data.message : error.message);
@@ -145,8 +133,7 @@ const PostCard = ({ route }) => {
   // Callback function to update post details after editing
   const handlePostUpdate = (updatedPost) => {
     setCurrentPost(updatedPost);
-    const updatedPosts = posts.map(p => p._id === updatedPost._id ? updatedPost : p);
-    setPosts(updatedPosts); // Update the global post context with the new data
+    setPosts(posts.map(p => p._id === updatedPost._id ? updatedPost : p));
   };
 
   return (
@@ -170,9 +157,9 @@ const PostCard = ({ route }) => {
 
           <View style={styles.usernameAndJoinContainer}>
             <TouchableOpacity>
-              <Text style={styles.username}>@{currentPost?.postedBy?.username}</Text>
+              <Text style={styles.username}>@{currentPost.postedBy?.username}</Text>
             </TouchableOpacity>
-            {currentPost?.postedBy?.username !== user?.username && !isMyGroup && (
+            {currentPost?.postedBy?._id !== user?._id && !isMyGroup && (
               <TouchableOpacity 
                 style={styles.joinGroup}
                 onPress={isFollowing ? handleUnfollowPost : handleFollowPost}

@@ -50,7 +50,7 @@ const Sesh = ({ navigation }) => {
       setPosts([...posts, newPost]);
 
       setLoading(false);
-      Alert.alert("Post Created", `Title: ${title}\nDescription: ${description}\nUpdate: ${update}`);
+      // Alert.alert("Post Created", `Title: ${title}\nDescription: ${description}\nUpdate: ${update}`);
       
       // Reset form fields
       setTitle("");

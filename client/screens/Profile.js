@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     container: {
-        marginTop: 80,
+        marginTop: 40,
         marginLeft: 10,
     },
     text: {
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     profileContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 20,
+        // marginBottom: 20,
     },
     headerInfo: {
         marginBottom: 20,

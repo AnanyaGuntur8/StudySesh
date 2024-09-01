@@ -41,17 +41,28 @@ export const PostProvider = ({ children }) => {
                 return group;
             });
 
-            setState(prevState => ({
-                ...prevState,
-                user: {
-                    ...prevState.user,
-                    followedPosts: updatedFollowedPosts
-                },
-                groups: updatedGroups
-            }));
+            setState(prevState => {
+                const newState = {
+                    ...prevState,
+                    user: {
+                        ...prevState.user,
+                        followedPosts: updatedFollowedPosts
+                    },
+                    groups: updatedGroups
+                };
+
+                // Log new state to ensure correct updates
+                console.log('Updated State:', newState);
+
+                return newState;
+            });
 
             const updatedUser = { ...user, followedPosts: updatedFollowedPosts };
             const authData = { ...state, user: updatedUser, groups: updatedGroups };
+
+            // Log authData to verify correct structure
+            console.log('Auth Data to be saved:', authData);
+
             await AsyncStorage.setItem('@auth', JSON.stringify(authData));
 
             await fetchPosts();  // Refetch to ensure posts are updated
@@ -83,17 +94,28 @@ export const PostProvider = ({ children }) => {
                 return group;
             });
 
-            setState(prevState => ({
-                ...prevState,
-                user: {
-                    ...prevState.user,
-                    followedPosts: updatedFollowedPosts
-                },
-                groups: updatedGroups
-            }));
+            setState(prevState => {
+                const newState = {
+                    ...prevState,
+                    user: {
+                        ...prevState.user,
+                        followedPosts: updatedFollowedPosts
+                    },
+                    groups: updatedGroups
+                };
+
+                // Log new state to ensure correct updates
+                console.log('Updated State:', newState);
+
+                return newState;
+            });
 
             const updatedUser = { ...user, followedPosts: updatedFollowedPosts };
             const authData = { ...state, user: updatedUser, groups: updatedGroups };
+
+            // Log authData to verify correct structure
+            console.log('Auth Data to be saved:', authData);
+
             await AsyncStorage.setItem('@auth', JSON.stringify(authData));
 
             await fetchPosts();  // Refetch to ensure posts are updated
@@ -105,7 +127,6 @@ export const PostProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        // console.log('Fetching posts...');
         fetchPosts();
     }, []);
 

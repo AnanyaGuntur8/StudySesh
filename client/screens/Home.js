@@ -1,14 +1,15 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import { AuthContext } from '../context/authContext';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import FooterMenu from '../components/Menus/FooterMenu';
+import axios from 'axios';
 import { PostContext } from '../context/postContext';
 import HeaderMenu from '../components/Menus/HeaderMenu';
 
 const Home = () => {
     const [state] = useContext(AuthContext);
-    const [posts] = useContext(PostContext);
+    const [posts, setPosts] = useContext(PostContext); // Assuming you have a way to set posts
     const navigation = useNavigation();
     const [searchItem, setSearchItem] = useState('');
 
@@ -23,6 +24,29 @@ const Home = () => {
     useEffect(() => {
         console.log('Current Posts:', posts);
     }, [posts]);
+
+    // Fetch posts or refresh the content every time the screen is focused
+    useFocusEffect(
+        useCallback(() => {
+            // Fetch or refresh posts here
+            // const fetchPosts = async () => {
+            //     try {
+            //         // Assuming there's an API endpoint to fetch the posts
+            //         const response = await axios.get('/posts');
+            //         setPosts(response.data);
+            //     } catch (error) {
+            //         console.error('Error fetching posts:', error);
+            //     }
+            // };
+
+            // fetchPosts();
+
+            // If you need to clean up on unfocus, return a function here
+            return () => {
+                // Clean up actions, if needed
+            };
+        }, [])
+    );
 
     return (
         <SafeAreaView style={styles.safearea}>

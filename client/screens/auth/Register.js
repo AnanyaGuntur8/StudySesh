@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Alert } from 'react-native';
 import React, { useContext, useState } from 'react';
 import InputBox from '../../components/forms/InputBox';
 import SubmitButton from '../../components/forms/SubmitButton';
@@ -42,52 +42,54 @@ const Register = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.pageTitle}>Register</Text>
-        <View style={{ marginHorizontal: 20 }}>
-          <InputBox
-            inputTitle={'Name'}
-            value={name}
-            setValue={setName}
-            autoCapitalize={true}
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.container}>
+          <Text style={styles.pageTitle}>Register</Text>
+          <View style={{ marginHorizontal: 20 }}>
+            <InputBox
+              inputTitle={'Name'}
+              value={name}
+              setValue={setName}
+              autoCapitalize={true}
+            />
+            <InputBox
+              inputTitle={'Username'}
+              value={username} // Corrected this line
+              setValue={setUsername} // Corrected this line
+              autoCapitalize={false}
+            />
+            <InputBox
+              inputTitle={'Email'}
+              keyboardType="email-address"
+              autoComplete="email"
+              value={email}
+              setValue={setEmail}
+            />
+            <InputBox
+              inputTitle={'Password'}
+              secureTextEntry={true}
+              autoComplete="password"
+              value={password}
+              setValue={setPassword}
+            />
+          </View>
+          <SubmitButton
+            btnTitle="Sign Up"
+            loading={loading}
+            handleSubmit={handleSubmit}
           />
-          <InputBox
-            inputTitle={'Username'}
-            value={username} // Corrected this line
-            setValue={setUsername} // Corrected this line
-            autoCapitalize={false}
-          />
-          <InputBox
-            inputTitle={'Email'}
-            keyboardType="email-address"
-            autoComplete="email"
-            value={email}
-            setValue={setEmail}
-          />
-          <InputBox
-            inputTitle={'Password'}
-            secureTextEntry={true}
-            autoComplete="password"
-            value={password}
-            setValue={setPassword}
-          />
-        </View>
-        <SubmitButton
-          btnTitle="Sign Up"
-          loading={loading}
-          handleSubmit={handleSubmit}
-        />
-        <Text style={styles.linkText}>
-          Already Have An Account?
-          <Text
-            style={styles.linkText2}
-            onPress={() => navigation.navigate('Login')}
-          >
-            {' '}
-            Login
+          <Text style={styles.linkText}>
+            Already Have An Account?
+            <Text
+              style={styles.linkText2}
+              onPress={() => navigation.navigate('Login')}
+            >
+              {' '}
+              Login
+            </Text>
           </Text>
-        </Text>
-      </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -96,6 +98,10 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#050315',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   container: {
     flex: 1,
