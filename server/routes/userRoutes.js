@@ -12,7 +12,7 @@ router.post('/register', registerController);
 router.post('/login', loginController )
 
 //update || put 
-
 router.put('/update-user', updateUserController)
 //export the model
+
 module.exports = router;
